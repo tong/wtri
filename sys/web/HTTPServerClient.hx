@@ -1,11 +1,11 @@
 package sys.web;
 
+import haxe.io.Bytes;
 import haxe.io.BytesInput;
 import sys.FileSystem;
 import sys.net.Socket;
 import sys.io.File;
 import sys.io.Process;
-import haxe.io.Bytes;
 
 private enum HTTPMethod {
 	get;
@@ -31,7 +31,30 @@ private typedef ReturnCode = {
 
 class HTTPServerClient {
 
-	static function __init__() {
+	public var mime : Hash<String>;
+	public var indexMimeTypes : Array<String>;
+	public var path : String;
+	public var bufsize : Int;
+	public var printDirectoryIndex : Bool;
+
+	var server : HTTPServer;
+	var socket : Socket;
+	var o : haxe.io.Output;
+	var headers : Hash<String>;
+	var returnCode : ReturnCode;
+
+	public function new( server : HTTPServer, socket : Socket, path : String,
+						 bufsize : Int = 512,
+						 printDirectoryIndex : Bool = true ) {
+		
+		this.server = server;
+		this.socket = socket;
+		this.path = path;
+		this.bufsize = bufsize;
+		this.printDirectoryIndex = printDirectoryIndex;
+		
+		o = socket.output;
+
 		mime = new Hash();
 		mime.set( "gif", "image/gif" );
 		mime.set( "jpeg", "image/jpeg" );
@@ -48,25 +71,8 @@ class HTTPServerClient {
 		mime.set( "mp3", "audio/mpeg" );
 		mime.set( "ogg", "application/ogg" );
 		mime.set( "php", "text/php" );
+
 		indexMimeTypes = ["html","n","txt","php"];
-	}
-
-	public static var mime : Hash<String>;
-	public static var indexMimeTypes : Array<String>;
-
-	var socket : Socket;
-	var path : String;
-	var o : haxe.io.Output;
-	var bufsize : Int;
-	var headers : Hash<String>;
-	var returnCode : ReturnCode;
-
-	public function new( socket : Socket, path : String ) {
-		this.socket = socket;
-		this.path = path;
-		o = socket.output;
-		bufsize = 512; //1<<8; //1<<14; //16384;
-		//indexMimeEReg = new EReg( "(index.)("+indexMimeTypes.join("|")+")", null );
 	}
 
 	public function readData( buf : Bytes, pos : Int, len : Int ) : Int {
@@ -87,28 +93,32 @@ class HTTPServerClient {
 			url : r.matched(2),
 			version : r.matched(3),
 		};
-		
 		r = ~/([a-zA-Z-]+): (.+)/;
 		while( ( t = i.readLine() ) != "" ) {
 			if( !r.match( t ) )
 				return null;
 			headers.set( r.matched(1), r.matched(2) );
 		}
-		
 		req.res = StringTools.urlDecode( req.url ); //?
 		req.ctype = headers.get( "Content-Type" );
-		
 		if( req.method == post ) {
 			//TODO read post content
 		}
 
-		Sys.println( socket.peer().host+" - "+Date.now().toString() );
+		trace( socket.peer().host+" - "+Date.now().toString()+" - "+req );
 
+		//TODO
 		//if( req.res == "server:config" ) {
+		//if( processCustomPath( req ) ) {
 
 		var fpath = findFile( req.res );
 		if( fpath == null ) {
-			notFound( req.res );
+			var p = path+req.url;
+			if( printDirectoryIndex && FileSystem.exists( p ) && FileSystem.isDirectory( p ) ) {
+				send( createDirectoryIndexHTML( req.res ) );
+			} else {
+				send( create404HTML( req.res ) );
+			}
 		} else {
 			var ext = fpath.substr( fpath.lastIndexOf(".")+1 );
 			var ctype = mime.exists( ext ) ? mime.get( ext ) : "unknown/unknown";
@@ -157,15 +167,12 @@ class HTTPServerClient {
 	}
 
 	function findFile( url : String ) : String {
-		if( url.length == 0 ) {
+		if( url.length == 0 )
 			return findIndexFile( path );
-		} else {
-			var p = path + url;
-			if( !FileSystem.exists( p ) )
-				return null;
-			return ( FileSystem.isDirectory( p ) ) ? findIndexFile( p+"/" ) : p;
-		}
-		return null;
+		var p = path + url;
+		if( !FileSystem.exists( p ) )
+			return null;
+		return FileSystem.isDirectory( p ) ? findIndexFile( p+"/" ) : p;
 	}
 
 	function sendHeaders() {
@@ -185,9 +192,46 @@ class HTTPServerClient {
 		send( b.toString() );
 	}
 
-	function notFound( url : String ) {
-		send( "404 - "+url );
+	function create404HTML( url : String ) {
+		return "404 - "+url;
 	}
+
+	function createDirectoryIndexHTML( path : String ) : String {
+		var p = this.path + path;
+		var b = new StringBuf();
+		b.add( "<html><head><title>" );
+		b.add( path );
+		b.add( "</title></head><body>" );
+		b.add( '<h1>Index of '+path+'</h1>' );
+		b.add( "<table>" );
+		if( path != "" )
+			b.add( '<tr><td valign="top"><a href="../">..</a></td></tr>' );
+		var dirs = new Array<String>();
+		var files = new Array<String>();
+		for( f in FileSystem.readDirectory( p ) )
+			FileSystem.isDirectory( p+"/"+f ) ? dirs.push( f ) : files.push( f );
+		for( f in dirs ) {
+			var fstat = FileSystem.stat( p+"/"+f );
+			b.add( '<tr><td valign="top"><a href="$f/">[$f]</a></td></tr>' );
+		}
+		for( f in files ) {
+			var fstat = FileSystem.stat( p+"/"+f );
+			b.add( '<tr><td valign="top"><a href="$f">$f</a></td>' );
+			b.add( '<td>  - </td>' );
+			b.add( '<td>'+fstat.mtime+'</td>' );
+			b.add( '<td>  - </td>' );
+			b.add( '<td>'+fstat.size+'</td>' );
+			b.add( "</tr>" );
+		}
+		b.add( '<tr><th colspan="5"><hr></th></tr>' );
+		b.add( '</table>' );
+		b.add( '<address>WTri http server '+server.host+' Port '+server.port+'</address>' );
+		b.add( '</body></html>' );
+		return b.toString();
+	}
+
+	//function createStatusHTML()
+	//function createBaseHTML()
 
 	static function external( name : String, args : Array<String> ) : Bytes {
 		var p = new sys.io.Process( name, args );

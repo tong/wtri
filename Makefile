@@ -3,13 +3,17 @@
 # WTRI
 #
 
-SRC = Makefile sys/net/* sys/web/*
-SERVER = wtri.n
-HX = haxe -main sys.web.HTTPServer -D haxe3 #--dce full #--no-traces
+BIN = wtri.n
+SRC = sys/net/*.hx sys/web/*.hx
+HX = haxe -main sys.web.HTTPServer -neko $(BIN) -D haxe3 -D wtri_standalone
 
-$(SERVER): $(SRC)
-	$(HX) -neko $@ -D wtri_standalone
-server: $(SERVER)
+all: build
+
+build: $(SRC)
+	$(HX) -dce full --no-traces
+
+build-debug: $(SRC)
+	$(HX) -debug
 
 clean:
-	rm -f $(SERVER)
+	rm -f $(BIN)
