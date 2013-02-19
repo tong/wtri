@@ -213,7 +213,7 @@ class RealtimeSocketServer<Client> {
 			wsocks : new Array(),
 			sleeps : new Array(),
 		};
-		t.t = Thread.create( runThread.callback(t));
+		t.t = Thread.create( runThread.bind(t));
 		return t;
 	}
 

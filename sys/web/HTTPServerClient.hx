@@ -3,9 +3,9 @@ package sys.web;
 import haxe.io.Bytes;
 import haxe.io.BytesInput;
 import sys.FileSystem;
-import sys.net.Socket;
 import sys.io.File;
 import sys.io.Process;
+import sys.net.Socket;
 
 private enum HTTPMethod {
 	get;
@@ -31,7 +31,7 @@ private typedef ReturnCode = {
 
 class HTTPServerClient {
 
-	public var mime : Hash<String>;
+	public var mime : Map<String,String>;
 	public var indexMimeTypes : Array<String>;
 	public var path : String;
 	public var bufsize : Int;
@@ -40,7 +40,7 @@ class HTTPServerClient {
 	var server : HTTPServer;
 	var socket : Socket;
 	var o : haxe.io.Output;
-	var headers : Hash<String>;
+	var headers : Map<String,String>;
 	var returnCode : ReturnCode;
 
 	public function new( server : HTTPServer, socket : Socket, path : String,
@@ -55,7 +55,7 @@ class HTTPServerClient {
 		
 		o = socket.output;
 
-		mime = new Hash();
+		mime = new Map();
 		mime.set( "gif", "image/gif" );
 		mime.set( "jpeg", "image/jpeg" );
 		mime.set( "jpg", "image/jpeg" );
@@ -77,7 +77,7 @@ class HTTPServerClient {
 
 	public function readData( buf : Bytes, pos : Int, len : Int ) : Int {
 
-		headers = new Hash();
+		headers = new Map();
 		returnCode = { code : 200, text : "OK" };
 
 		var i = new BytesInput( buf, pos, len );
@@ -192,6 +192,8 @@ class HTTPServerClient {
 		send( b.toString() );
 	}
 
+	//function formatContent( t : String ) : String {
+
 	function create404HTML( url : String ) {
 		return "404 - "+url;
 	}
@@ -211,7 +213,7 @@ class HTTPServerClient {
 		for( f in FileSystem.readDirectory( p ) )
 			FileSystem.isDirectory( p+"/"+f ) ? dirs.push( f ) : files.push( f );
 		for( f in dirs ) {
-			var fstat = FileSystem.stat( p+"/"+f );
+			//var fstat = FileSystem.stat( p+"/"+f );
 			b.add( '<tr><td valign="top"><a href="$f/">[$f]</a></td></tr>' );
 		}
 		for( f in files ) {

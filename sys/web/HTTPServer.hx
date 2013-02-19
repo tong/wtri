@@ -4,7 +4,7 @@ import haxe.io.Bytes;
 import sys.net.Socket;
 
 /**
-	Embeddable HTTP server.function
+	Embeddable HTTP server.
 	Comppile with -D wtri_standalone to build a standalone application.
 */
 class HTTPServer extends sys.net.RealtimeSocketServer<HTTPServerClient> {
