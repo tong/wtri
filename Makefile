@@ -1,28 +1,44 @@
 
 #
-# WTRI
+# wtri - web server
+#
+# For release version build with: release=true
+# Default is debug
 #
 
-BIN = wtri.n
-SRC = sys/net/*.hx sys/web/*.hx
-HX = haxe -main sys.web.HTTPServer -D haxe3 -D wtri_standalone
+CPPFLAGS =
+SRC = sys/net/ThreadSocketServer.hx sys/net/WebSocketUtil.hx
 
-all: build
+ifeq (${release},true)
+FLAGS = --no-traces -dce full
+else
+FLAGS = -debug -dce no
+endif
 
-build-neko: $(SRC)
-	$(HX) -neko $(BIN) -dce full --no-traces
+uname_M := $(shell sh -c 'uname -m 2>/dev/null || echo not')
+ifeq (${uname_M},x86_64)
+CPPFLAGS += -D HXCPP_M64
+endif
 
-build-debug: $(SRC)
-	$(HX) -neko $(BIN) -debug
+all: ws-neko wss-neko
 
-build-haxelib: build-neko
-	cp $(BIN) run.n
+ws-neko: $(SRC) sys/WebServer*.hx
+	@mkdir -p bin
+	haxe -neko bin/wtri.n -main sys.WebServer $(FLAGS) -D dev_server
 
-build-exe: build-neko
-	nekotools boot $(BIN)
+wss-neko: $(SRC) sys/WebSocketServer*.hx
+	@mkdir -p bin
+	haxe -neko bin/wtri-ws.n -main sys.WebSocketServer $(FLAGS) -D dev_server
 
-build: build-neko
+#ws-cpp: $(SRC) sys/WebServer*.hx
+#	haxe -cpp bin/cpp -main sys.WebServer $(FLAGS) $(CPPFLAGS) -D dev_server
+#	#TODO mv
+
+#wss-cpp: $(SRC) sys/WebSocketServer*.hx
+#	haxe -cpp bin/cpp -main sys.WebSocketServer $(FLAGS) $(CPPFLAGS) -D dev_server
+#	#TODO mv
 
 clean:
-	rm -f $(BIN) run.n
+	rm -rf bin
 
+.PHONY: all ws-neko wss-neko clean
