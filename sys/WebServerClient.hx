@@ -10,6 +10,7 @@ import haxe.io.BytesInput;
 using StringTools;
 
 private typedef Headers = Map<String,String>;
+private typedef Params = Map<String,String>;
 
 private typedef ReturnCode = {
 	var code : Int;
@@ -19,11 +20,11 @@ private typedef ReturnCode = {
 typedef HTTPClientRequest = {
 	url : String,
 	version : String,
-	headers : Map<String,String>,
+	headers : Headers,
 	method : HTTPMethod,
 	//res : String,
 	?ctype : String,
-	params : Map<String,String>,
+	params : Params,
 	?postData : String
 }
 
@@ -58,7 +59,7 @@ class WebServerClient {
 		
 		if( mime == null ) {
 			mime = new Map();
-			mime.set( 'css', 'image/css' );
+			mime.set( 'css', 'text/css' );
 			mime.set( 'gif', 'image/gif' );
 			mime.set( 'html', 'text/html' );
 			mime.set( 'htm', 'text/html' );
@@ -92,7 +93,7 @@ class WebServerClient {
 		Read client input
 	*/
 	public function read( buf : Bytes, pos : Int, len : Int ) : Int {
-		//trace("###################################### read");
+		trace("###################################### read");
 		var i = new BytesInput( buf, pos, len );
 		var line = i.readLine();
 		var r = ~/(GET|POST) \/(.*) HTTP\/(1\.1)/;
@@ -100,26 +101,32 @@ class WebServerClient {
 			sendError( 400, 'Bad Request' );
 			return len;
 		}
-		if( r.matched(1) == 'post' ) {
+		//TODO
+		var ttt = r.matched(1);
+		trace(ttt);
+		if( ttt == 'POST' ) {
 			//TODO
 			trace("TODO http post");
 		}
 		var url = r.matched(2);
-		//if( !url.endsWith('/') )
-		//	url += '/';
 		var version = r.matched(3);
-		var params = new Map<String,String>();
+		trace("URL: "+url);
+		trace("VERSION: "+version);
+		var params = new Params();
 		var pi = url.indexOf( '?' );
 		if( pi != -1 ) {
 			var sparams = url.substr( pi );
 			url = url.substr( 0, pi );
+			trace( url );
 			for( p in sparams.split('&') ) {
+				trace(p);
 				if( !EREG_PARAM.match( p ) ) {
 					trace("ERROR");
 				}
 				trace( EREG_PARAM.matched(1) );
 			}
 		}
+		trace("PARAMS: "+params);
 		request = {
 			version : version,
 			//ctype : headers.get( 'Content-Type' ),
@@ -140,6 +147,7 @@ class WebServerClient {
 		try processHTTPRequest( request ) catch( e : Dynamic ) {
 			//TODO
 			trace(e);
+			sendError( 500, 'Internal Server Error' );
 		}
 		return len;
 	}
@@ -150,8 +158,9 @@ class WebServerClient {
 	*/
 	public function processHTTPRequest( r : HTTPClientRequest ) {
 		#if dev_server
-		trace( r, socket.peer().host.ip );
 		#end
+		//trace( r, socket.peer().host.ip );
+		for( p in r.params ) trace( p );
 		returnCode = { code : 200, text : "OK" };
 		headers = new Headers();
 		var url = r.url;
@@ -168,24 +177,24 @@ class WebServerClient {
 			o.writeString( s );
 		} else {
 			var ext = fpath.substr( fpath.lastIndexOf( '.' )+1 );
-			trace("EXT:"+ext);
 			var ctype = mime.exists( ext ) ? mime.get( ext ) : 'unknown/unknown';
 			headers.set( 'Content-Type', ctype );
-			var p = this.path + fpath;
+			var fullPath = this.path + fpath;
+			trace(fullPath);
 			switch( ext ) {
 			//TODO params
 			case "php":
-				//var result = externProcess( 'php', [p].concat( args ) );
-				var result = externProcess( 'php', [p] );
+				//var result = externProcess( 'php', [fullPath].concat( args ) );
+				var result = externProcess( 'php', [fullPath] );
 				headers.set( 'Content-Length', Std.string( result.length ) );
 				sendHeaders();
 				o.writeString( result );
 			default:
-				var fstat = FileSystem.stat( p );
+				var fstat = FileSystem.stat( fullPath );
 				var size = fstat.size;
 				headers.set( 'Content-Length', Std.string( size ) );
 				sendHeaders();
-				var fi = File.read( p, true );
+				var fi = File.read( fullPath, true );
 				if( size < bufSize )
 					o.writeInput( fi, size );
 				else {
@@ -210,8 +219,8 @@ class WebServerClient {
 
 	function findFile( url : String ) : String {
 		#if dev_server
-		//trace( "findFile : "+url  );
 		#end
+		//trace( "findFile : "+url  );
 		if( url == null || url.length == 0 )
 			return findIndexFile( url );
 		if( !FileSystem.exists( path+url ) )
@@ -223,8 +232,8 @@ class WebServerClient {
 
 	function findIndexFile( url : String ) : String {
 		#if dev_server
-		//trace( "findIndexFile : "+url  );
 		#end
+		//trace( "findIndexFile : "+url  );
 		var fnames = indexFileNames.join( '|' );
 		var ftypes = indexFileTypes.join( '|' );
 		var r = new EReg( '($fnames).($ftypes)$', '' );
