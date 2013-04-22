@@ -1,6 +1,8 @@
 package sys.net;
 
+import haxe.crypto.BaseCode;
 import haxe.crypto.Sha1;
+import haxe.io.Bytes;
 import haxe.io.BytesInput;
 import haxe.io.Output;
 
@@ -8,7 +10,49 @@ class WebSocketUtil {
 
 	public static inline var MAGIC_STRING = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 	
-	public static function send( o : Output, t : String ) {
+	/**
+	*/
+	public static function read( buf : Bytes, pos : Int, len : Int ) : String {
+		var i = new BytesInput( buf, pos, len );
+		switch( i.readByte() ) {
+		case 0x00 :	
+			var s = "";
+			var b : Int;
+			while( ( b = i.readByte() ) != 0xFF )
+				s += String.fromCharCode(b);
+			return s;
+		case 0x81 :
+			var len = i.readByte();
+			if (len & 0x80 != 0) { // mask
+				len &= 0x7F;
+				if( len == 126 ) {
+					var b2 = i.readByte();
+					var b3 = i.readByte();
+					len = (b2 << 8) + b3;
+				} else if (len == 127) {
+					var b2 = i.readByte();
+					var b3 = i.readByte();
+					var b4 = i.readByte();
+					var b5 =i.readByte();
+					len = ( b2 << 24 ) + ( b3 << 16 ) + ( b4 << 8 ) + b5;
+				}
+				var mask = [];
+				mask.push( i.readByte() );
+				mask.push( i.readByte() );
+				mask.push( i.readByte() );
+				mask.push(  i.readByte() );
+				var data = new StringBuf();
+				for( n in 0...len )
+					data.addChar( i.readByte() ^ mask[n % 4]);
+				return data.toString();
+			}
+		}
+		return null;
+	}
+
+	/**
+	*/
+	public static function write( o : Output, t : String ) {
 		o.writeByte( 0x81 );
 		var len = if( t.length < 126 ) t.length else if( t.length < 65536 ) 126 else 127;
 		o.writeByte( len | 0x00 );
@@ -26,6 +70,10 @@ class WebSocketUtil {
 		o.writeString( t );
 	}
 
+	/**
+		Handshake with given input.
+		Returns the 
+	*/
 	public static function handshake( i : BytesInput ) : String {
 		var l = i.readLine();
 		if( !~/^GET (\/[^\s]*) HTTP\/1\.1$/.match( l ) ) {
@@ -57,7 +105,7 @@ class WebSocketUtil {
 				break;
 			}
 		}
-		var key = encodeBase64( hex2data( Sha1.encode( StringTools.trim(skey) + MAGIC_STRING ) ) );
+		var key = encodeBase64( hex2data( Sha1.encode( StringTools.trim( skey ) + MAGIC_STRING ) ) );
 		var s = "HTTP/1.1 101 Switching Protocols\r\n"
 			  + "Upgrade: websocket\r\n"
 			  + "Connection: Upgrade\r\n"
@@ -79,7 +127,7 @@ class WebSocketUtil {
 			case 1 : "==";
 			default : "";
 		};
-		return haxe.crypto.BaseCode.encode( t, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/") + suffix;
+		return BaseCode.encode( t, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/") + suffix;
 	}
 
 }

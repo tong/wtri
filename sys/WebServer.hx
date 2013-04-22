@@ -4,7 +4,7 @@ import sys.net.Socket;
 #if no_threads
 import sys.net.SocketServer;
 #else
-import sys.net.ThreadSocketServer;
+import sys.net.RealtimeSocketServer;
 #end
 import haxe.io.Bytes;
 
@@ -12,7 +12,7 @@ class WebServer extends
 	#if no_threads
 	//TODO SocketServer<WebServerClient>
 	#else
-	ThreadSocketServer<WebServerClient,String>
+	RealtimeSocketServer<WebServerClient>
 	#end {
 
 	public var host(default,null) : String;
@@ -31,9 +31,11 @@ class WebServer extends
 	}
 
 	public function start() {
+		active = true;
 		try {
 			run( host, port );
 		} catch( e : Dynamic ) {
+			active = false;
 			trace(e);
 			Sys.exit(1);
 		}
@@ -42,29 +44,32 @@ class WebServer extends
 	/*
 	public function stop() {
 		//TODO
-		//active = false;
+		active = false;
+		//sock.close();
+		//sock.shutdown( true, true );
 	}
 	*/
 
 	public override function clientConnected( s : Socket ) : WebServerClient {
-		#if dev_server
-		//trace( 'Client connected ['+s.peer()+']' );
-		#end
-		return new WebServerClient( s, path );
-	}
-
-	public override function readClientMessage( c : WebServerClient, buf : Bytes, pos : Int, len : Int ) {
-		var len = c.read( buf, pos, len );
-		return { msg : null, bytes : len };
+		trace( 'Client connected' );
+		return new WebServerClient( this, s, path );
 	}
 
 	override function clientDisconnected( c : WebServerClient ) {
-		#if dev_server
-		//trace( "Client disconnected " );
-		#end
-		//c.close();
+		trace( 'Client disconnected' );
+		//c.cleanup();
  	}
 
+	public override function readClientMessage( c : WebServerClient, buf : haxe.io.Bytes, pos : Int, len : Int ) {
+		//trace( 'Read client message' );
+		var r = c.read( buf, pos, len );
+		if( r == null )
+			return null;
+		c.processRequest( r );
+		return len;
+	}
+
+ 	/*
 	#if dev_server
 
 	public static function log( v : Dynamic, ?inf : haxe.PosInfos ) {
@@ -84,15 +89,13 @@ class WebServer extends
 		s.add( v );
 		Sys.println( s.toString() );
 	}
+	*/
 
 	static function main() {
-
 		//haxe.Log.trace = log;
-		
 		var host = 'localhost';
 		var port = 7000;
 		var path = Sys.getCwd();
-
 		var args = Sys.args();
 		try {
 			if( args[0] != null ) host = args[0];
@@ -106,6 +109,4 @@ class WebServer extends
 		trace( 'Starting development web server : $host:$port:$path' );
 		server.start();
 	}
-
-	#end
 }

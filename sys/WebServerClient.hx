@@ -44,14 +44,15 @@ class WebServerClient {
 	public var indexFileTypes : Array<String>;
 	public var bufSize : Int;
 
+	var server : WebServer;
 	var socket : Socket;
 	var o : haxe.io.Output;
 	var request : HTTPClientRequest;
-	
 	var returnCode : ReturnCode;
 	var headers : Headers;
 
-	public function new( socket : Socket,
+	public function new( server : WebServer,
+						 socket : Socket,
 						 path : String,
 						 ?mime : Map<String,String>,
 						 ?indexFileNames : Array<String>, ?indexFileTypes : Array<String>,
@@ -79,6 +80,7 @@ class WebServerClient {
 		if( indexFileTypes == null )
 			indexFileTypes = ['html','n','php'];
 
+		this.server = server;
 		this.socket = socket;
 		this.path = path;
 		this.mime = mime;
@@ -92,26 +94,22 @@ class WebServerClient {
 	/**
 		Read client input
 	*/
-	public function read( buf : Bytes, pos : Int, len : Int ) : Int {
+	public function read( buf : Bytes, pos : Int, len : Int ) : HTTPClientRequest {
 		trace("###################################### read");
 		var i = new BytesInput( buf, pos, len );
 		var line = i.readLine();
 		var r = ~/(GET|POST) \/(.*) HTTP\/(1\.1)/;
 		if( !r.match( line ) ) {
 			sendError( 400, 'Bad Request' );
-			return len;
+			return null;
 		}
 		//TODO
-		var ttt = r.matched(1);
-		trace(ttt);
-		if( ttt == 'POST' ) {
+		if( r.matched(1) == 'POST' ) {
 			//TODO
 			trace("TODO http post");
 		}
 		var url = r.matched(2);
 		var version = r.matched(3);
-		trace("URL: "+url);
-		trace("VERSION: "+version);
 		var params = new Params();
 		var pi = url.indexOf( '?' );
 		if( pi != -1 ) {
@@ -126,7 +124,6 @@ class WebServerClient {
 				trace( EREG_PARAM.matched(1) );
 			}
 		}
-		trace("PARAMS: "+params);
 		request = {
 			version : version,
 			//ctype : headers.get( 'Content-Type' ),
@@ -139,24 +136,27 @@ class WebServerClient {
 		while( ( line = i.readLine() ) != '' ) {
 			if( !r.match( line ) ) {
 				//TODO send error
-				return len;
+				return null;
 			}
 			request.headers.set( r.matched(1), r.matched(2) );
 		}
 		request.ctype = request.headers.get( 'Content-Type' );
+		/*
 		try processHTTPRequest( request ) catch( e : Dynamic ) {
 			//TODO
 			trace(e);
 			sendError( 500, 'Internal Server Error' );
 		}
-		return len;
+		*/
+		return request;
+		//return len;
 	}
 
 	/**
 		Process client http request.
 		Gets called internally from read(), public to inject/handle custom http requests.
 	*/
-	public function processHTTPRequest( r : HTTPClientRequest ) {
+	public function processRequest( r : HTTPClientRequest ) {
 		#if dev_server
 		#end
 		//trace( r, socket.peer().host.ip );
@@ -180,7 +180,6 @@ class WebServerClient {
 			var ctype = mime.exists( ext ) ? mime.get( ext ) : 'unknown/unknown';
 			headers.set( 'Content-Type', ctype );
 			var fullPath = this.path + fpath;
-			trace(fullPath);
 			switch( ext ) {
 			//TODO params
 			case "php":
@@ -217,9 +216,20 @@ class WebServerClient {
 		}
 	}
 
+	/*
+	public function close() {
+		if( socket != null ) {
+			//stopClient();
+			try socket.close() catch(e:Dynamic){
+				trace(e);
+			}
+		} 
+	}
+	public function cleanup() {
+	}
+	*/
+
 	function findFile( url : String ) : String {
-		#if dev_server
-		#end
 		//trace( "findFile : "+url  );
 		if( url == null || url.length == 0 )
 			return findIndexFile( url );
@@ -231,8 +241,6 @@ class WebServerClient {
 	}
 
 	function findIndexFile( url : String ) : String {
-		#if dev_server
-		#end
 		//trace( "findIndexFile : "+url  );
 		var fnames = indexFileNames.join( '|' );
 		var ftypes = indexFileTypes.join( '|' );
@@ -253,9 +261,10 @@ class WebServerClient {
 
 	function sendError( status : Int, ?content : String ) {
 		returnCode.code = status;
-		sendHeaders();
 		if( content != null )
-			o.writeString( content );
+			headers.set( 'Content-Length', Std.string( content.length ) );
+		sendHeaders();
+		if( content != null ) o.writeString( content );
 	}
 
 	inline function writeLine( s : String = "" ) {
@@ -263,6 +272,7 @@ class WebServerClient {
 	}
 
 	function externProcess( name : String, args : Array<String> ) : String {
+		//TODO Sys.cmd
 		var p = new sys.io.Process( name, args );
 		var e = p.stderr.readAll();
 		var r = p.stdout.readAll();

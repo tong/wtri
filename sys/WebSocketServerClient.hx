@@ -4,26 +4,41 @@ import sys.net.Socket;
 import sys.net.WebSocketUtil;
 import haxe.io.Bytes;
 import haxe.io.BytesInput;
+import haxe.io.Output;
 
 class WebSocketServerClient {
 
 	public var bufSize : Int;
 
 	var socket : Socket;
-	var o : haxe.io.Output;
+	var o : Output;
 	var handshaked : Bool;
 
 	public function new( socket : Socket, bufSize : Int = 1024 ) {
 		this.socket = socket;
 		this.bufSize = bufSize;
-		o = socket.output;
 		handshaked = false;
+		o = socket.output;
 	}
 
 	/**
-		Read client input
+		Read input
 	*/
-	public function read( buf : Bytes, pos : Int, len : Int ) : Int {
+	public function read( buf : Bytes, pos : Int, len : Int ) : String {
+		var s = WebSocketUtil.read( buf, pos, len );
+		if( handshaked ) {
+			return WebSocketUtil.read( buf, pos, len );
+		}
+		var r = WebSocketUtil.handshake( new BytesInput( buf, pos, len ) );
+		if( r == null ) {
+			trace( "handshake failed" );
+			socket.close();
+			return null;
+		}
+		o.writeString( r );
+		handshaked = true;
+		return "handshaked";
+		/*
 		if( handshaked ) {
 			handleData( readWebSocket( buf, pos, len ) );
 			return len;
@@ -37,8 +52,18 @@ class WebSocketServerClient {
 		o.writeString( r );
 		handshaked = true;
 		return len;
+		*/
+
 	}
 
+	/**
+		Process input
+	*/
+	public function processData( data : String ) {
+
+	}
+
+	/*
 	function readWebSocket( buf : Bytes, pos : Int, len : Int ) : String {
 		var i = new BytesInput( buf, pos, len );
 		switch( i.readByte() ) {
@@ -76,13 +101,14 @@ class WebSocketServerClient {
 		}
 		return null;
 	}
+	*/
 
 	// override me
 	function handleData( data : String ) {
-		send( "Hello, i am the wtri websocket server" );
+		write( "Hello, i am the wtri websocket server" );
 	}
 
-	inline function send( t : String ) {
-		WebSocketUtil.send( o, t );
+	inline function write( t : String ) {
+		WebSocketUtil.write( o, t );
 	}
 }

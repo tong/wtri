@@ -16,7 +16,7 @@ private typedef ThreadInfos = {
 	var id : Int;
 	var t : Thread;
 	var p : Poll;
-	var socks : Array<sys.net.Socket>;
+	var socks : Array<Socket>;
 }
 
 private typedef ClientInfos<Client> = {
@@ -38,6 +38,7 @@ class ThreadSocketServer<Client,Message> {
 	public var messageHeaderSize : Int;
 	public var updateTime : Float;
 	public var maxSockPerThread : Int;
+	public var active : Bool;
 
 	var threads : Array<ThreadInfos>;
 	var sock : Socket;
@@ -55,6 +56,7 @@ class ThreadSocketServer<Client,Message> {
 		maxBufferSize = (1 << 16);
 		maxSockPerThread = 64;
 		updateTime = 1;
+		active = false;
 	}
 
 	function runThread(t) {
@@ -99,7 +101,7 @@ class ThreadSocketServer<Client,Message> {
 
 	function loopThread( t : ThreadInfos ) {
 		if( t.socks.length > 0 )
-			for( s in t.p.poll(t.socks,connectLag) ) {
+			for( s in t.p.poll( t.socks, connectLag ) ) {
 				var infos : ClientInfos<Client> = s.custom;
 				try {
 					readClientData(infos);
@@ -156,7 +158,7 @@ class ThreadSocketServer<Client,Message> {
 			work(onError.bind(e,stack));
 	}
 
-	function addClient( sock : sys.net.Socket ) {
+	function addClient( sock : Socket ) {
 		var start = Std.random(nthreads);
 		for( i in 0...nthreads ) {
 			var t = threads[(start + i)%nthreads];
@@ -176,7 +178,7 @@ class ThreadSocketServer<Client,Message> {
 		refuseClient(sock);
 	}
 
-	function refuseClient( sock : sys.net.Socket) {
+	function refuseClient( sock : Socket) {
 		// we have reached maximum number of active clients
 		sock.close();
 	}
@@ -184,8 +186,8 @@ class ThreadSocketServer<Client,Message> {
 	function runTimer() {
 		var l = new Lock();
 		while( true ) {
-			l.wait(updateTime);
-			work(update);
+			l.wait( updateTime );
+			work( update );
 		}
 	}
 
@@ -204,9 +206,9 @@ class ThreadSocketServer<Client,Message> {
 		}
 	}
 
-	public function addSocket( s : sys.net.Socket ) {
-		s.setBlocking(false);
-		work(addClient.bind(s));
+	public function addSocket( s : Socket ) {
+		s.setBlocking( false );
+		work( addClient.bind( s ) );
 	}
 
 	public function run( host, port ) {
@@ -214,7 +216,7 @@ class ThreadSocketServer<Client,Message> {
 		sock.bind(new sys.net.Host(host),port);
 		sock.listen(listen);
 		init();
-		while( true ) {
+		while( active ) {
 			try {
 				addSocket(sock.accept());
 			} catch( e : Dynamic ) {
@@ -231,7 +233,7 @@ class ThreadSocketServer<Client,Message> {
 		}
 	}
 
-	public function stopClient( s : sys.net.Socket ) {
+	public function stopClient( s : Socket ) {
 		var infos : ClientInfos<Client> = s.custom;
 		try s.shutdown(true,true) catch( e : Dynamic ) { };
 		infos.thread.t.sendMessage({ s : s, cnx : false });
