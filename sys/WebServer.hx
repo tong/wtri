@@ -9,8 +9,9 @@ import sys.net.RealtimeSocketServer;
 import haxe.io.Bytes;
 
 class WebServer extends
-	#if no_threads
-	//TODO SocketServer<WebServerClient>
+	#if webserver_no_threads
+	//TODO
+	sys.net.SocketServer<WebServerClient>
 	#else
 	RealtimeSocketServer<WebServerClient>
 	#end {
@@ -31,12 +32,12 @@ class WebServer extends
 	}
 
 	public function start() {
-		active = true;
+		//active = true;
 		try {
 			run( host, port );
 		} catch( e : Dynamic ) {
-			active = false;
-			trace(e);
+			//active = false;
+			trace( "ERROR: "+e );
 			Sys.exit(1);
 		}
 	}

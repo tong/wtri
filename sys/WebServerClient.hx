@@ -28,9 +28,6 @@ typedef HTTPClientRequest = {
 	?postData : String
 }
 
-/**
-	Simple HTTP server
-*/
 class WebServerClient {
 
 	public static var defaultIndexFileNames : Array<String> = ['index'];
@@ -60,20 +57,21 @@ class WebServerClient {
 		
 		if( mime == null ) {
 			mime = new Map();
-			mime.set( 'css', 'text/css' );
-			mime.set( 'gif', 'image/gif' );
-			mime.set( 'html', 'text/html' );
-			mime.set( 'htm', 'text/html' );
-			mime.set( 'jpg',' image/jpeg' );
-			mime.set( 'jpeg', 'image/jpeg' );
-			mime.set( 'js', 'application/javascript' );
-			mime.set( 'png', 'image/png' );
-			mime.set( 'txt', 'image/plain' );
-			mime.set( 'xml', 'text/xml' );
-			mime.set( "wav", "audio/x-wav" );
-			mime.set( "mp3", "audio/mpeg" );
-			mime.set( "ogg", "application/ogg" );
-			mime.set( "php", "text/php" );
+			mime = [
+				'css' => 'text/css',
+				'gif' => 'image/gif',
+				'html' => 'text/html',
+				'jpg' => 'image/jpeg',
+				'jpeg' => 'image/jpeg',
+				'js' => 'application/javascript',
+				'png' => 'image/png',
+				'txt' => 'text/plain',
+				'xml' => 'text/xml',
+				'wav' => 'audio/x-wav',
+				'mp3' => 'audio/mpeg',
+				'ogg' => 'application/ogg',
+				'php' => 'text/php'
+			];
 		}
 		if( indexFileNames == null )
 			indexFileNames = ['index'];
@@ -92,10 +90,10 @@ class WebServerClient {
 	}
 
 	/**
-		Read client input
+	 * Read client input
 	*/
 	public function read( buf : Bytes, pos : Int, len : Int ) : HTTPClientRequest {
-		//trace("###################################### read");
+		trace("###################################### read");
 		var i = new BytesInput( buf, pos, len );
 		var line = i.readLine();
 		var r = ~/(GET|POST) \/(.*) HTTP\/(1\.1)/;
@@ -145,7 +143,7 @@ class WebServerClient {
 	}
 
 	/**
-		Process client http request.
+	 * Process client http request.
 	*/
 	public function processRequest( r : HTTPClientRequest ) {
 		#if dev_server
