@@ -95,7 +95,7 @@ class WebServerClient {
 		Read client input
 	*/
 	public function read( buf : Bytes, pos : Int, len : Int ) : HTTPClientRequest {
-		trace("###################################### read");
+		//trace("###################################### read");
 		var i = new BytesInput( buf, pos, len );
 		var line = i.readLine();
 		var r = ~/(GET|POST) \/(.*) HTTP\/(1\.1)/;
@@ -141,26 +141,18 @@ class WebServerClient {
 			request.headers.set( r.matched(1), r.matched(2) );
 		}
 		request.ctype = request.headers.get( 'Content-Type' );
-		/*
-		try processHTTPRequest( request ) catch( e : Dynamic ) {
-			//TODO
-			trace(e);
-			sendError( 500, 'Internal Server Error' );
-		}
-		*/
 		return request;
-		//return len;
 	}
 
 	/**
 		Process client http request.
-		Gets called internally from read(), public to inject/handle custom http requests.
 	*/
 	public function processRequest( r : HTTPClientRequest ) {
 		#if dev_server
 		#end
 		//trace( r, socket.peer().host.ip );
-		for( p in r.params ) trace( p );
+		//trace( "processRequest" );
+		//for( p in r.params ) trace( p );
 		returnCode = { code : 200, text : "OK" };
 		headers = new Headers();
 		var url = r.url;
@@ -171,7 +163,7 @@ class WebServerClient {
 		}
 		if( fpath == null ) {
 			returnCode.code = 404;
-			var s = '404';
+			var s = '404 - Not Found';
 			headers.set( 'Content-Length', Std.string( s.length ) );
 			sendHeaders();
 			o.writeString( s );
@@ -189,29 +181,7 @@ class WebServerClient {
 				sendHeaders();
 				o.writeString( result );
 			default:
-				var fstat = FileSystem.stat( fullPath );
-				var size = fstat.size;
-				headers.set( 'Content-Length', Std.string( size ) );
-				sendHeaders();
-				var fi = File.read( fullPath, true );
-				if( size < bufSize )
-					o.writeInput( fi, size );
-				else {
-					//TODO partial
-					var sent = 0;
-					var l = ( size < bufSize ) ? size : bufSize;
-					while( true ) {
-						o.writeInput( fi, l );
-						sent += l;
-						if( sent == size )
-							break;
-						l = size-sent;
-						if( l > bufSize )
-							l = bufSize;
-					}
-				}
-				fi.close();
-				//trace( Date.now().getTime()-__ts );
+				sendFile( fullPath );
 			}
 		}
 	}
@@ -225,6 +195,7 @@ class WebServerClient {
 			}
 		} 
 	}
+
 	public function cleanup() {
 	}
 	*/
@@ -259,6 +230,31 @@ class WebServerClient {
 		writeLine();
 	}
 
+	function sendFile( path : String ) {
+		var fstat = FileSystem.stat( path );
+		var size = fstat.size;
+		headers.set( 'Content-Length', Std.string( size ) );
+		sendHeaders();
+		var fi = File.read( path, true );
+		if( size < bufSize )
+			o.writeInput( fi, size );
+		else {
+			//TODO http partial
+			var sent = 0;
+			var l = ( size < bufSize ) ? size : bufSize;
+			while( true ) {
+				o.writeInput( fi, l );
+				sent += l;
+				if( sent == size )
+					break;
+				l = size-sent;
+				if( l > bufSize )
+					l = bufSize;
+			}
+		}
+		fi.close();
+	}
+
 	function sendError( status : Int, ?content : String ) {
 		returnCode.code = status;
 		if( content != null )
@@ -285,4 +281,6 @@ class WebServerClient {
 		}
 		return null;
 	}
+
+
 }
