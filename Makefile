@@ -21,7 +21,7 @@ CPPFLAGS += -D HXCPP_M64
 endif
 
 
-all: websocketserver-neko
+all: webserver-neko
 
 
 webserver-cpp: $(SRC)
