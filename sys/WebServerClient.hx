@@ -3,11 +3,16 @@ package sys;
 import sys.FileSystem;
 import sys.io.File;
 import sys.net.Socket;
-import haxe.HTTPMethod;
 import haxe.io.Bytes;
 import haxe.io.BytesInput;
 
 using StringTools;
+
+enum HTTPMethod {
+	get;
+	post;
+	custom( t : String );
+}
 
 private typedef Headers = Map<String,String>;
 private typedef Params = Map<String,String>;
