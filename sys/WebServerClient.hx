@@ -8,7 +8,7 @@ import haxe.io.BytesInput;
 
 using StringTools;
 
-enum HTTPMethod {
+private enum HTTPMethod {
 	get;
 	post;
 	custom( t : String );
@@ -23,6 +23,8 @@ private typedef ReturnCode = {
 }
 
 typedef HTTPClientRequest = {
+	//client_address (host,port)
+	//server : IWebserver
 	url : String,
 	version : String,
 	headers : Headers,
@@ -31,12 +33,14 @@ typedef HTTPClientRequest = {
 	?ctype : String,
 	params : Params,
 	?postData : String
+	//server_version
+	//TODO encoding
 }
 
 class WebServerClient {
 
 	public static var defaultIndexFileNames : Array<String> = ['index'];
-	public static var defaultIndexFileTypes : Array<String> = ['html'];
+	public static var defaultIndexFileTypes : Array<String> = ['html','htm'];
 
 	static var EREG_PARAM = ~/([a-zA-Z0-9_])=([a-zA-Z0-9_])/;
 
@@ -52,6 +56,7 @@ class WebServerClient {
 	var request : HTTPClientRequest;
 	var returnCode : ReturnCode;
 	var headers : Headers;
+	//var gzip : Bool;
 
 	public function new( server : WebServer,
 						 socket : Socket,
@@ -117,6 +122,7 @@ class WebServerClient {
 		var line = i.readLine();
 		var r = ~/(GET|POST) \/(.*) HTTP\/(1\.1)/;
 		if( !r.match( line ) ) {
+			//TODO check for websockets
 			sendError( 400, 'Bad Request' );
 			return null;
 		}
@@ -208,9 +214,13 @@ class WebServerClient {
 
 	function createResponseHeader() : Headers {
 		return [
+			'Date' => DateTools.format( Date.now(), '%A, %e %B %Y %I:%M:%S %Z' ),
 			#if dev_server
-			'Server' => haxe.WebServer.name
+			'Server' => haxe.WebServer.name+' ('+Sys.systemName()+')'
 			#end
+			//Connection:Keep-Alive
+			//Keep-Alive:timeout=5, max=100
+			//Content-Encoding:gzip
 		];
 	}
 
