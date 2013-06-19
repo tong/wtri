@@ -1,10 +1,10 @@
 package sys;
 
 import sys.net.Socket;
-import sys.net.RealtimeSocketServer;
+import sys.net.ThreadSocketServer;
 import haxe.io.Bytes;
 
-class WebSocketServer extends RealtimeSocketServer<WebSocketServerClient> {
+class WebSocketServer extends ThreadSocketServer<WebSocketServerClient,String> {
 
 	public var host(default,null) : String;
 	public var port(default,null) : Int;
@@ -20,46 +20,28 @@ class WebSocketServer extends RealtimeSocketServer<WebSocketServerClient> {
 	}
 
 	/*
-		//TODO
+	//TODO
 	public function stop() {
 		//active = false;
 	}
 	*/
 
 	public override function clientConnected( s : Socket ) : WebSocketServerClient {
-		trace( 'Client connected ['+s.peer()+']' );
+		trace( 'client connected ['+s.peer()+']' );
 		return new WebSocketServerClient( s );
 	}
 
 
 	override function clientDisconnected( c : WebSocketServerClient ) {
-		trace( "Client disconnected " );
+		trace( "client disconnected " );
  	}
 
-	public override function readClientMessage( c : WebSocketServerClient, buf : Bytes, pos : Int, len : Int ) {
+ 	override function readClientMessage( c : WebSocketServerClient, buf : Bytes, pos : Int, len : Int ) {
 		var r = c.read( buf, pos, len );
-		if( r == "handshaked" )
-			return len;
 		if( r == null )
 			return null;
-		trace( "Client message: "+r );
 		c.processData( r );
-		return len;
+		return { msg : null, bytes : len }
 	}
-
-	#if dev_server
-
-	static function main() {
-		var host = 'localhost';
-		var port = 7000;
-		//TODO validate args
-		var args = Sys.args();
-		if( args[0] != null ) host = args[0];
-		if( args[1] != null ) port = Std.parseInt( args[1] );
-		var server = new WebSocketServer( host, port );
-		trace( 'Starting development websocket server : $host:$port' );
-		server.start();
-	}
-
-	#end
+	
 }

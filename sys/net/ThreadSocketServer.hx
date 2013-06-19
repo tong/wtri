@@ -38,7 +38,7 @@ class ThreadSocketServer<Client,Message> {
 	public var messageHeaderSize : Int;
 	public var updateTime : Float;
 	public var maxSockPerThread : Int;
-	public var active : Bool;
+	//public var active : Bool;
 
 	var threads : Array<ThreadInfos>;
 	var sock : Socket;
@@ -56,7 +56,7 @@ class ThreadSocketServer<Client,Message> {
 		maxBufferSize = (1 << 16);
 		maxSockPerThread = 64;
 		updateTime = 1;
-		active = false;
+		//active = false;
 	}
 
 	function runThread(t) {
@@ -211,14 +211,14 @@ class ThreadSocketServer<Client,Message> {
 		work( addClient.bind( s ) );
 	}
 
-	public function run( host, port ) {
+	public function run( host : String, port : Int ) {
 		sock = new Socket();
-		sock.bind(new sys.net.Host(host),port);
-		sock.listen(listen);
+		sock.bind( new sys.net.Host( host ), port );
+		sock.listen( listen );
 		init();
-		while( active ) {
+		while( true ) {
 			try {
-				addSocket(sock.accept());
+				addSocket( sock.accept() );
 			} catch( e : Dynamic ) {
 				logError(e);
 			}

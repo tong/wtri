@@ -31,7 +31,7 @@ typedef HTTPClientRequest = {
 class WebServerClient {
 
 	public static var defaultIndexFileNames : Array<String> = ['index'];
-	public static var defaultIndexFileTypes : Array<String> = ['html','n','php'];
+	public static var defaultIndexFileTypes : Array<String> = ['html'];
 
 	static var EREG_PARAM = ~/([a-zA-Z0-9_])=([a-zA-Z0-9_])/;
 
@@ -56,7 +56,6 @@ class WebServerClient {
 						 bufSize : Int = 1024 ) {
 		
 		if( mime == null ) {
-			mime = new Map();
 			mime = [
 				'css' => 'text/css',
 				'gif' => 'image/gif',
@@ -73,10 +72,8 @@ class WebServerClient {
 				'php' => 'text/php'
 			];
 		}
-		if( indexFileNames == null )
-			indexFileNames = ['index'];
-		if( indexFileTypes == null )
-			indexFileTypes = ['html','n','php'];
+		if( indexFileNames == null ) indexFileNames = defaultIndexFileNames;
+		if( indexFileTypes == null ) indexFileTypes = defaultIndexFileTypes;
 
 		this.server = server;
 		this.socket = socket;
@@ -89,11 +86,28 @@ class WebServerClient {
 		o = socket.output;
 	}
 
+	/*
+	// TODO
+	public function close() {
+		if( socket != null ) {
+			//stopClient();
+			try socket.close() catch(e:Dynamic){
+				trace(e);
+			}
+		} 
+	}
+	*/
+
 	/**
-	 * Read client input
+	*/
+	public function cleanup() {
+	}
+
+	/**
+		Read client input
 	*/
 	public function read( buf : Bytes, pos : Int, len : Int ) : HTTPClientRequest {
-		trace("###################################### read");
+		//trace( "###################################### read" );
 		var i = new BytesInput( buf, pos, len );
 		var line = i.readLine();
 		var r = ~/(GET|POST) \/(.*) HTTP\/(1\.1)/;
@@ -143,16 +157,18 @@ class WebServerClient {
 	}
 
 	/**
-	 * Process client http request.
+		Process client http request.
 	*/
 	public function processRequest( r : HTTPClientRequest ) {
+		
 		#if dev_server
+		//trace( "###################################### processRequest" );
 		#end
-		//trace( r, socket.peer().host.ip );
-		//trace( "processRequest" );
-		//for( p in r.params ) trace( p );
+
 		returnCode = { code : 200, text : "OK" };
-		headers = new Headers();
+		
+		headers = createResponseHeader();
+
 		var url = r.url;
 		var fpath : String = null;
 		try fpath = findFile( r.url ) catch( e : Dynamic ) {
@@ -160,6 +176,7 @@ class WebServerClient {
 			return;
 		}
 		if( fpath == null ) {
+			//if( showFileIndex ) //TODO
 			returnCode.code = 404;
 			var s = '404 - Not Found';
 			headers.set( 'Content-Length', Std.string( s.length ) );
@@ -184,19 +201,13 @@ class WebServerClient {
 		}
 	}
 
-	/*
-	public function close() {
-		if( socket != null ) {
-			//stopClient();
-			try socket.close() catch(e:Dynamic){
-				trace(e);
-			}
-		} 
+	function createResponseHeader() : Headers {
+		return [
+			#if dev_server
+			'Server' => haxe.WebServer.name
+			#end
+		];
 	}
-
-	public function cleanup() {
-	}
-	*/
 
 	function findFile( url : String ) : String {
 		//trace( "findFile : "+url  );
@@ -262,7 +273,7 @@ class WebServerClient {
 	}
 
 	inline function writeLine( s : String = "" ) {
-		o.writeString( s+'\r\n' );
+		o.writeString( '$s\r\n' );
 	}
 
 	function externProcess( name : String, args : Array<String> ) : String {
@@ -279,6 +290,5 @@ class WebServerClient {
 		}
 		return null;
 	}
-
 
 }

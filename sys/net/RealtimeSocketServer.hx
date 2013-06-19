@@ -22,7 +22,8 @@ private typedef ThreadInfos = {
 
 private typedef SocketInfos<Client> = {
 	var sock : Socket;
-	var handle : SocketHandle;
+	@:access(neko.net.SocketHandle)
+	var handle : Dynamic; //TODO sys.net.SocketHandle;
 	var client : Client;
 	var thread : ThreadInfos;
 	var wbuffer : Bytes;
@@ -66,8 +67,10 @@ class RealtimeSocketOutput<Client> extends SocketOutput {
 
 class RealtimeSocketServer<Client> {
 	
-	private static var socket_send_char : SocketHandle -> Int -> Void = Lib.load("std","socket_send_char",2);
-	private static var socket_send : SocketHandle -> Dynamic -> Int -> Int -> Int = Lib.load("std","socket_send",4);
+	//private static var socket_send_char : SocketHandle -> Int -> Void = Lib.load("std","socket_send_char",2);
+	//private static var socket_send : SocketHandle -> Dynamic -> Int -> Int -> Int = Lib.load("std","socket_send",4);
+	private static var socket_send_char : Dynamic -> Int -> Void = Lib.load("std","socket_send_char",2);
+	private static var socket_send : Dynamic -> Dynamic -> Int -> Int -> Int = Lib.load("std","socket_send",4);
 
 	public var config : {
 		listenValue : Int,
@@ -96,7 +99,7 @@ class RealtimeSocketServer<Client> {
 			messageHeaderSize : 1,
 			threadsCount : 10,
 		};
-		active = false;
+		//active = false;
 	}
 
 	public function run( host : String, port : Int ) {
@@ -228,7 +231,9 @@ class RealtimeSocketServer<Client> {
 			thread = initThread();
 			threads[tid] = thread;
 		}
-		var sh : { private var __s : SocketHandle; } = s;
+		//TODO
+		//var sh : { private var __s : SocketHandle; } = s;
+		var sh : { private var __s : Dynamic; } = s;
 		var cinf : SocketInfos<Client> = {
 			sock : s,
 			handle : sh.__s,
@@ -305,11 +310,10 @@ class RealtimeSocketServer<Client> {
 	// ---------- API ----------------
 
 	public function clientConnected( s : Socket ) : Client {
-		trace("WTFFFFFFFFFFFFFFFFFFFFFF");
 		return null;
 	}
 
-	public function readClientMessage( c : Client, buf : Bytes, pos : Int, len : Int ) : Int {
+	public function readClientMessage( c : Client, buf : Bytes, pos : Int, len : Int ) : Null<Int> {
 		return null;
 	}
 

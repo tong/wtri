@@ -103,6 +103,10 @@ class WebSocketServerClient {
 	}
 	*/
 
+	public function close() {
+		// abstract
+	}
+
 	// override me
 	function handleData( data : String ) {
 		write( "Hello, i am the wtri websocket server" );
