@@ -1,12 +1,36 @@
 package haxe;
 
+import sys.FileSystem;
+import haxe.Template;
+
+private class Client extends sys.WebServerClient {
+
+	public var showFileIndex : Bool = true;
+
+	override function fileNotFound( path : String ) {
+		if( showFileIndex ) {
+			var html = new haxe.Template( '<html><body>'+FileSystem.readDirectory( this.path ).join('<br>')+'</body></html>' ).execute( {} );
+			sendData( html );
+			return;
+		} else {
+			//TODO custom 404 page
+		}
+		super.fileNotFound( path );
+	}
+}
+
 /**
 	Development web server
 */
 @:require(sys)
-class WebServer extends sys.WebServer {
+class WebServer extends sys.WebServer<Client> {
 
 	public static var name = 'Haxe development server';
+
+	override function clientConnected( s : sys.net.Socket ) : Client {
+		trace( 'client connected' );
+		return new Client( s, path );
+	}
 
 	static function main() {
 		var host = 'localhost';

@@ -50,7 +50,7 @@ class WebServerClient {
 	public var indexFileTypes : Array<String>;
 	public var bufSize : Int;
 
-	var server : WebServer;
+	//var server : WebServer;
 	var socket : Socket;
 	var o : haxe.io.Output;
 	var request : HTTPClientRequest;
@@ -58,7 +58,7 @@ class WebServerClient {
 	var headers : Headers;
 	//var gzip : Bool;
 
-	public function new( server : WebServer,
+	public function new( //server : WebServer,
 						 socket : Socket,
 						 path : String,
 						 ?mime : Map<String,String>,
@@ -85,7 +85,7 @@ class WebServerClient {
 		if( indexFileNames == null ) indexFileNames = defaultIndexFileNames;
 		if( indexFileTypes == null ) indexFileTypes = defaultIndexFileTypes;
 
-		this.server = server;
+		//this.server = server;
 		this.socket = socket;
 		this.path = path;
 		this.mime = mime;
@@ -187,12 +187,15 @@ class WebServerClient {
 			return;
 		}
 		if( fpath == null ) {
+			fileNotFound( fpath );
+			/*
 			//if( showFileIndex ) //TODO
 			returnCode.code = 404;
 			var s = '404 - Not Found';
 			headers.set( 'Content-Length', Std.string( s.length ) );
 			sendHeaders();
 			o.writeString( s );
+			*/
 		} else {
 			var ext = fpath.substr( fpath.lastIndexOf( '.' )+1 );
 			var ctype = mime.exists( ext ) ? mime.get( ext ) : 'unknown/unknown';
@@ -254,6 +257,13 @@ class WebServerClient {
 		writeLine();
 	}
 
+	function sendData( data : String ) {
+		headers.set( 'Content-Length', Std.string( data.length ) );
+		sendHeaders();
+		//TODO write buffered
+		o.writeString( data );
+	}
+
 	function sendFile( path : String ) {
 		var fstat = FileSystem.stat( path );
 		var size = fstat.size;
@@ -277,6 +287,14 @@ class WebServerClient {
 			}
 		}
 		fi.close();
+	}
+
+	function fileNotFound( path : String ) {
+		returnCode.code = 404;
+		var s = '404 - Not Found';
+		headers.set( 'Content-Length', Std.string( s.length ) );
+		sendHeaders();
+		o.writeString( s );
 	}
 
 	function sendError( status : Int, ?content : String ) {

@@ -7,7 +7,7 @@
 
 SRC = sys/*.hx sys/net/*.hx
 CPPFLAGS =
-DEBUG = false
+DEBUG = true
 
 ifeq (${DEBUG},true)
 FLAGS = -debug -dce no

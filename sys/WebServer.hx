@@ -4,14 +4,11 @@ import haxe.io.Bytes;
 import sys.net.Socket;
 import sys.net.ThreadSocketServer;
 
-class WebServer extends ThreadSocketServer<WebServerClient,String> {
-
+class WebServer<Client:WebServerClient> extends ThreadSocketServer<Client,String> {
 
 	public var host(default,null) : String;
 	public var port(default,null) : Int;
 	public var path(default,null) : String;
-	//public var verbose : Bool = false;
-	//public var showFileIndex : Bool = false;
 
 	public function new( host : String, port : Int,
 						 path : String ) {
@@ -36,17 +33,17 @@ class WebServer extends ThreadSocketServer<WebServerClient,String> {
 		//sock.shutdown( true, true );
 	}
 
-	override function clientConnected( s : Socket ) : WebServerClient {
+	override function clientConnected( s : Socket ) : Client {
 		trace( 'client connected' );
-		return new WebServerClient( this, s, path );
+		return cast new WebServerClient( s, path );
 	}
 
-	override function clientDisconnected( c : WebServerClient ) {
+	override function clientDisconnected( c : Client ) {
 		trace( 'client disconnected' );
 		c.cleanup();
  	}
 
-	override function readClientMessage( c : WebServerClient, buf : Bytes, pos : Int, len : Int ) {
+	override function readClientMessage( c : Client, buf : Bytes, pos : Int, len : Int ) {
 		var r = c.read( buf, pos, len );
 		if( r == null )
 			return null;
