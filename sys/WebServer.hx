@@ -2,24 +2,10 @@ package sys;
 
 import haxe.io.Bytes;
 import sys.net.Socket;
-/*
-#if webserver_no_threads
-import sys.net.SocketServer;
-#else
-//import sys.net.RealtimeSocketServer;
 import sys.net.ThreadSocketServer;
-#end
-*/
 
-class WebServer extends sys.net.ThreadSocketServer<WebServerClient,String> {
-	/*
-	#if webserver_no_threads
-	sys.net.SocketServer<WebServerClient>
-	#else
-	ThreadSocketServer<WebServerClient,String>
-	//RealtimeSocketServer<WebServerClient>
-	#end {
-	*/
+class WebServer extends ThreadSocketServer<WebServerClient,String> {
+
 
 	public var host(default,null) : String;
 	public var port(default,null) : Int;
@@ -44,7 +30,6 @@ class WebServer extends sys.net.ThreadSocketServer<WebServerClient,String> {
 	}
 
 	public function stop() {
-		//TODO 
 		trace("TODO");
 		//active = false;
 		//sock.close();
@@ -61,7 +46,6 @@ class WebServer extends sys.net.ThreadSocketServer<WebServerClient,String> {
 		c.cleanup();
  	}
 
-	//override function readClientMessage( c : WebServerClient, buf : Bytes, pos : Int, len : Int ) : Null<Int> {
 	override function readClientMessage( c : WebServerClient, buf : Bytes, pos : Int, len : Int ) {
 		trace( 'Read client message ' );
 		var r = c.read( buf, pos, len );
@@ -69,7 +53,6 @@ class WebServer extends sys.net.ThreadSocketServer<WebServerClient,String> {
 			return null;
 		c.processRequest( r );
 		return { msg : null, bytes : len }
-		//return len;
 	}
 
 }
