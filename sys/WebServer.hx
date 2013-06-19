@@ -47,7 +47,6 @@ class WebServer extends ThreadSocketServer<WebServerClient,String> {
  	}
 
 	override function readClientMessage( c : WebServerClient, buf : Bytes, pos : Int, len : Int ) {
-		trace( 'Read client message ' );
 		var r = c.read( buf, pos, len );
 		if( r == null )
 			return null;

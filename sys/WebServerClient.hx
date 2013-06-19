@@ -277,18 +277,9 @@ class WebServerClient {
 	}
 
 	function externProcess( name : String, args : Array<String> ) : String {
-		//TODO Sys.cmd
 		var p = new sys.io.Process( name, args );
 		var e = p.stderr.readAll();
-		var r = p.stdout.readAll();
-			trace(e);
-			trace(r);
-		if( e != null && e.length > 0 ) {
-			return e.toString();
-		} else if( r != null ) {
-			return r.toString();
-		}
-		return null;
+		return if( e != null && e.length > 0 ) e.toString(); else p.stdout.readAll().toString();
 	}
 
 }
