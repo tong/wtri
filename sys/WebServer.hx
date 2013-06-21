@@ -11,9 +11,11 @@ class WebServer<Client:WebServerClient> extends ThreadSocketServer<Client,String
 	public var path(default,null) : String;
 
 	public function new( host : String, port : Int,
-						 path : String ) {
+						 ?path : String ) {
 
-		if( !StringTools.endsWith( path, "/" ) ) path += "/";
+		if( path != null )
+			if( !StringTools.endsWith( path, "/" ) )
+				path += "/";
 
 		super();
 		this.host = host;
@@ -34,12 +36,12 @@ class WebServer<Client:WebServerClient> extends ThreadSocketServer<Client,String
 	}
 
 	override function clientConnected( s : Socket ) : Client {
-		trace( 'client connected' );
+		//trace( 'client connected' );
 		return cast new WebServerClient( s, path );
 	}
 
 	override function clientDisconnected( c : Client ) {
-		trace( 'client disconnected' );
+		//trace( 'client disconnected' );
 		c.cleanup();
  	}
 
