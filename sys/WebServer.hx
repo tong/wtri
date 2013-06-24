@@ -13,9 +13,14 @@ class WebServer<Client:WebServerClient> extends ThreadSocketServer<Client,String
 	public function new( host : String, port : Int,
 						 ?path : String ) {
 
-		if( path != null )
-			if( !StringTools.endsWith( path, "/" ) )
-				path += "/";
+		if( path == null )
+			path = Sys.getCwd();
+		if( !StringTools.endsWith( path, "/" ) )
+			path += "/";
+		if( !FileSystem.exists( path ) )
+			throw 'Root path not found';
+		if( !FileSystem.isDirectory( path ) )
+			throw 'Root path must be a directory';
 
 		super();
 		this.host = host;
@@ -28,29 +33,27 @@ class WebServer<Client:WebServerClient> extends ThreadSocketServer<Client,String
 		run( host, port );
 	}
 
+	//TODO
 	public function stop() {
-		trace("TODO");
-		//active = false;
-		//sock.close();
-		//sock.shutdown( true, true );
+		throw 'stop thread server not implemented';
 	}
 
 	override function clientConnected( s : Socket ) : Client {
-		//trace( 'client connected' );
 		return cast new WebServerClient( s, path );
 	}
 
 	override function clientDisconnected( c : Client ) {
-		//trace( 'client disconnected' );
 		c.cleanup();
  	}
 
-	override function readClientMessage( c : Client, buf : Bytes, pos : Int, len : Int ) {
-		var r = c.read( buf, pos, len );
-		if( r == null )
+	override function readClientMessage( c : Client, buf : Bytes, pos : Int, len : Int ) : { data : String, length : Int } {
+		var r = c.readRequest( buf, pos, len );
+		if( r == null ) {
+			//TODO hmmmm
 			return null;
+		}
 		c.processRequest( r );
-		return { msg : null, bytes : len }
+		return { data : null, length : len };
 	}
 
 }

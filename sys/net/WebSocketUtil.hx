@@ -72,7 +72,6 @@ class WebSocketUtil {
 
 	/**
 		Handshake with given input.
-		Returns the 
 	*/
 	public static function handshake( i : BytesInput ) : String {
 		var l = i.readLine();

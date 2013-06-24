@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>::path::</title>
+<meta charset="utf-8" />
+<meta http-equiv="content-language" content="en">
+<meta http-equiv="cache-control" content="no-cache">
+<style type="text/css">
+body, a, h1, h2, h3, h4, img, div {
+	margin:0; padding:0;
+}
+body {
+	font-family: Ubuntu;
+	font-size: 11px;
+	background: #f7f7f7;
+	color: #2E3436;
+}
+a {
+	color: #2E3436;
+	text-decoration: none;
+}
+a:hover {
+	color: #111;
+	text-decoration: underline;
+}
+img {
+	border: none;
+}
+img.icon {
+	-webkit-user-select: none; -moz-user-select: none;
+}
+#wtri-filebrowser {
+	margin: 0px 0px 0px 0px;
+	max-width: 800px;
+}
+.filebrowser {
+	padding: 5px 10px 10px 0px;
+	cursor: default;
+}
+.filebrowser img.icon {
+	width: 18px; height: 18px;
+}
+.filebrowser header {
+	margin: 0px 0px 6px 9px;
+	font-size: 16px;
+}
+.filebrowser .items {
+	margin-left: 10px;
+}
+.filebrowser .item {
+	padding: 3px 0px 0px 5px;
+}
+.filebrowser .item:hover {
+	background: #fff;
+}
+.filebrowser .item .name,
+.filebrowser .item .meta {
+	vertical-align: top;
+}
+.filebrowser .item .name {
+	margin: 0 5px 0 1px;
+}
+.filebrowser .item .name:hover {
+	color: #000;
+	background: #fff;
+}
+.filebrowser .item .meta {
+	color: #bbb;
+}
+.filebrowser .item .meta:hover {
+	color: #777;
+}
+address {
+	color: #aaa;
+	margin: 10px 0 10px 12px;
+	font-size: 10px;
+}
+footer {
+	display:none;
+}
+</style>
+<script type="text/javascript">
+var r = Math.random();
+console.log(r);
+</script>
+</head><body>
+<!--
+<img src="wtri---test.jpg"/>
+	-->
+<div id="wtri-filebrowser" class="filebrowser">
+	<header><a href="/">wtri://</a>::path::</header>
+	<div class="items">
+		::foreach dirs::
+		<div class="item dir">
+			<img class="icon" src="::icon::">
+			<a href="::path::/" class="name">::name::</a>
+			<span class="meta">::modified::</span>
+		</div>
+		::end::
+		::foreach files::
+		<div class="item file">
+			<img class="icon" src="::icon::">
+			<a href="::path::" class="name">::name::</a>
+			<span class="meta">::modified::</span>
+			<span class="meta">::size::</span>
+		</div>
+		::end::
+	</div>
+</div>
+<address>::address::</address>
+<footer>http://disktree.net</footer>
+</body></html>

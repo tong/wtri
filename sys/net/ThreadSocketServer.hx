@@ -87,12 +87,12 @@ class ThreadSocketServer<Client,Message> {
 		var pos = 0;
 		var len = c.bufpos + bytes;
 		while( len >= messageHeaderSize ) {
-			var m = readClientMessage(c.client,c.buf,pos,len);
+			var m = readClientMessage( c.client, c.buf, pos, len );
 			if( m == null )
 				break;
-			pos += m.bytes;
-			len -= m.bytes;
-			work(clientMessage.bind(c.client,m.msg));
+			pos += m.length;
+			len -= m.length;
+			work( clientMessage.bind( c.client, m.data ) );
 		}
 		if( pos > 0 )
 			c.buf.blit(0,c.buf,pos,len);
@@ -254,11 +254,8 @@ class ThreadSocketServer<Client,Message> {
 	public dynamic function clientDisconnected( c : Client ) {
 	}
 
-	public dynamic function readClientMessage( c : Client, buf : haxe.io.Bytes, pos : Int, len : Int ) : { msg : Message, bytes : Int } {
-		return {
-			msg : null,
-			bytes : len,
-		};
+	public dynamic function readClientMessage( c : Client, buf : Bytes, pos : Int, len : Int ) : { data : Message, length : Int } {
+		return { data : null, length : len };
 	}
 
 	public dynamic function clientMessage( c : Client, msg : Message ) {
