@@ -58,7 +58,7 @@ img.icon {
 	vertical-align: top;
 }
 .filebrowser .item .name {
-	margin: 0 5px 0 1px;
+	margin: 0 2px 0 1px;
 }
 .filebrowser .item .name:hover {
 	color: #000;
@@ -79,14 +79,11 @@ footer {
 	display:none;
 }
 </style>
-<script type="text/javascript">
-var r = Math.random();
-console.log(r);
-</script>
+<script type="text/javascript"></script>
 </head><body>
 <!--
 <img src="wtri---test.jpg"/>
-	-->
+-->
 <div id="wtri-filebrowser" class="filebrowser">
 	<header><a href="/">wtri://</a>::path::</header>
 	<div class="items">
@@ -95,13 +92,16 @@ console.log(r);
 			<img class="icon" src="::icon::">
 			<a href="::path::/" class="name">::name::</a>
 			<span class="meta">::modified::</span>
+			<span class="meta">::items:: items</span>
 		</div>
 		::end::
 		::foreach files::
 		<div class="item file">
 			<img class="icon" src="::icon::">
 			<a href="::path::" class="name">::name::</a>
+			<span class="meta">-</span>
 			<span class="meta">::modified::</span>
+			<span class="meta">-</span>
 			<span class="meta">::size::</span>
 		</div>
 		::end::

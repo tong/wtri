@@ -75,23 +75,7 @@ private class Client extends sys.WebServerClient {
 
 		super.processRequest( r, customRoot );
 
-		if( Server.verbose ) {
-			var s = new StringBuf();
-			s.add( socket.peer().host );
-			s.add( ' - ' );
-			var now = Date.now();
-			var time = DateTools.format( Date.now(), '%d/%b/%Y:%H:%M:%S %z' );
-			s.add( time );
-			s.add( ' - ' );
-			s.add( if( r.method == null ) 'GET' else Std.string( r.method ).toUpperCase() );
-			s.add( ' - ' );
-			s.add( '"'+(if( r.url == null || r.url.length == 0 ) '/' else r.url)+'"' );
-			//TODO
-		//	if( r.params.array().count() > 0 ) r.params.array().join('/');
-			s.add( ' - ' );
-			s.add( r.headers.get('User-Agent') );
-			Sys.println( s.toString() );
-		}
+		logHTTPRequest( r );
 	}
 
 	override function fileNotFound( path : String, url : String ) {
@@ -115,8 +99,10 @@ private class Client extends sys.WebServerClient {
 			};
 			if( FileSystem.isDirectory( p ) ) {
 				o.icon = '/wtri/lib/icons/folder.png'; //Server.libPrefix+'icons/folder.png'; //TODO
+				o.items = FileSystem.readDirectory( p ).length;
 				dirs.push( o );
 			} else {
+				trace(fstat);
 				var icon = 'mime-unknown';
 				if( !f.startsWith('.') ) {
 					switch(f) {
@@ -133,6 +119,9 @@ private class Client extends sys.WebServerClient {
 				}
 				o.icon = '/wtri/lib/icons/$icon.png'; //TODO
 				o.size = fstat.size;
+				if( fstat.size > 1024*1024 ) o.size = Std.int( fstat.size/(1024*1024) )+'MB';
+				else if( fstat.size > 1024 ) o.size = Std.int( fstat.size/1024 )+'KB';
+				else o.size = fstat.size+'B';
 				files.push( o );
 			}
 		}
@@ -153,6 +142,26 @@ private class Client extends sys.WebServerClient {
 		var h = super.createResponseHeaders();
 		h.set( 'Server', Server.name );
 		return h;
+	}
+
+	function logHTTPRequest( r : HTTPClientRequest ) {
+		if( Server.verbose ) {
+			var s = new StringBuf();
+			s.add( socket.peer().host );
+			s.add( ' - ' );
+			var now = Date.now();
+			var time = DateTools.format( Date.now(), '%d/%b/%Y:%H:%M:%S %z' );
+			s.add( time );
+			s.add( ' - ' );
+			s.add( if( r.method == null ) 'GET' else Std.string( r.method ).toUpperCase() );
+			s.add( ' - ' );
+			s.add( '"'+(if( r.url == null || r.url.length == 0 ) '/' else r.url)+'"' );
+			//TODO
+		//	if( r.params.array().count() > 0 ) r.params.array().join('/');
+			s.add( ' - ' );
+			s.add( r.headers.get('User-Agent') );
+			Sys.println( s.toString() );
+		}
 	}
 
 	static function sortByName( a : { name : String }, b : { name : String } ) : Int {
