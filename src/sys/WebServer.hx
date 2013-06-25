@@ -13,14 +13,10 @@ class WebServer<Client:WebServerClient> extends ThreadSocketServer<Client,String
 	public function new( host : String, port : Int,
 						 ?path : String ) {
 
-		if( path == null )
-			path = Sys.getCwd();
-		if( !StringTools.endsWith( path, "/" ) )
-			path += "/";
-		if( !FileSystem.exists( path ) )
-			throw 'Root path not found';
-		if( !FileSystem.isDirectory( path ) )
-			throw 'Root path must be a directory';
+		if( path == null ) path = Sys.getCwd();
+		if( !StringTools.endsWith( path, "/" ) ) path += "/";
+		if( !FileSystem.exists( path ) ) throw 'Root path not found';
+		if( !FileSystem.isDirectory( path ) ) throw 'Root path must be a directory';
 
 		super();
 		this.host = host;
@@ -39,7 +35,7 @@ class WebServer<Client:WebServerClient> extends ThreadSocketServer<Client,String
 	}
 
 	override function clientConnected( s : Socket ) : Client {
-		return cast new WebServerClient( s, path );
+		return throw 'abstract method';
 	}
 
 	override function clientDisconnected( c : Client ) {

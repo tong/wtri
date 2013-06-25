@@ -44,12 +44,13 @@ class WebServerClient {
 	public var mime : Map<String,String>;
 	public var indexFileNames : Array<String>;
 	public var indexFileTypes : Array<String>;
-	//public var keepAlive : Bool;
+	//public var keepAlive : Bool = true;
+	//public var compression : Bool;
 
 	var socket : Socket;
 	var out : haxe.io.Output;
-	var returnCode : ReturnCode;
-	var returnHeaders : Headers;
+	var responseCode : ReturnCode;
+	var responseHeaders : Headers;
 
 	public function new( socket : Socket, root : String ) {
 
@@ -58,27 +59,27 @@ class WebServerClient {
 		this.root = root;
 
 		mime = [
-			'css' => 'text/css',
-			'gif' => 'image/gif',
-			'html' => 'text/html',
-			'hx' => 'text/haxe',
-			'jpg' => 'image/jpeg',
-			'jpeg' => 'image/jpeg',
-			'js' => 'application/javascript',
-			'mp3' => 'audio/mpeg',
-			'mpg' => 'audio/mpeg',
-			'mpeg' => 'audio/mpeg',
-			'ogg' => 'application/ogg',
-			'php' => 'text/php',
-			'png' => 'image/png',
-			'txt' => 'text/plain',
-			'wav' => 'audio/x-wav',
-			'xml' => 'text/xml'
+			'css' 	=> 'text/css',
+			'gif' 	=> 'image/gif',
+			'html' 	=> 'text/html',
+			'hx'	=> 'text/haxe',
+			'jpg' 	=> 'image/jpeg',
+			'jpeg' 	=> 'image/jpeg',
+			'js' 	=> 'application/javascript',
+			'mp3' 	=> 'audio/mpeg',
+			'mpg' 	=> 'audio/mpeg',
+			'mpeg' 	=> 'audio/mpeg',
+			'ogg' 	=> 'application/ogg',
+			'php' 	=> 'text/php',
+			'png' 	=> 'image/png',
+			'txt' 	=> 'text/plain',
+			'wav' 	=> 'audio/x-wav',
+			'xml' 	=> 'text/xml'
 		];
 
 		indexFileNames = ['index'];
 		indexFileTypes = ['html','htm'];
-		returnCode = { code : 200, text : "OK" };
+		responseCode = { code : 200, text : "OK" };
 	}
 
 	/**
@@ -154,16 +155,28 @@ class WebServerClient {
 		var path = if( customRoot != null ) customRoot else root;
 		path += r.url;
 
-		returnHeaders = createResponseHeaders();
+		//trace("PPPPPPPPPPPPPPPPPPPPP: "+path );
+
+		responseCode = { code : 200, text : "OK" };
+		responseHeaders = createResponseHeaders();
 
 		var filePath = findFile( path );
 		if( filePath == null ) {
-			trace("FILE NOT FOUND "+path);
-			//returnCode = { code : 200, text : "OK" };
 			fileNotFound( path, r.url );
 		} else {
-			returnCode = { code : 200, text : "OK" };
-			returnHeaders.set( 'Content-Type', r.contentType );
+
+			responseHeaders.set( 'Content-Type', r.contentType );
+
+			/* TODO execute neko modules
+			if( r.url.endsWith('.n') ) {
+				var l = neko.vm.Loader.local();
+				var m = l.loadModule('ext.n',l );
+				trace(m);
+				//trace( m.execute() );
+				sendData("NEKO!");
+			}
+			*/
+
 			sendFile( path );
 		}
 	}
@@ -190,51 +203,64 @@ class WebServerClient {
 		return null;
 	}
 
-	function fileNotFound( path : String, url : String ) {
-		sendError( 404, 'Not Found', '404 Not Found - /$url' );
+	function fileNotFound( path : String, url : String, ?content : String ) {
+		if( content == null ) content = '404 Not Found - /$url';
+		sendError( 404, 'Not Found', content );
 	}
 
 	function createResponseHeaders() : Headers {
 		var h = new Headers();
+		#if cpp
+		//TODO  Date.format %A- not implemented yet
+		h.set( 'Date', Date.now().toString() );
+		#elseif neko
 		h.set( 'Date', DateTools.format( Date.now(), '%A, %e %B %Y %I:%M:%S %Z' ) );
+		#end
 		/*
 		if( keepAlive ) {
 			h.set( 'Connection', 'Keep-Alive' );
 			h.set( 'Keep-Alive', 'timeout=5, max=99' );
 		}
 		*/
+		/*
+		if( compression ) {
+			h.set( 'Content-Encoding', 'gzip' );
+		}
+		*/
 		return h;
 	}
 
 	function sendData( data : String ) {
-		returnHeaders.set( 'Content-Length', Std.string( data.length ) );
+		responseHeaders.set( 'Content-Length', Std.string( data.length ) );
 		sendHeaders();
 		out.writeString( data );
 	}
 
 	function sendFile( path : String ) {
 		var stat = FileSystem.stat( path );
-		returnHeaders.set( 'Content-Length', Std.string( stat.size ) );
+		responseHeaders.set( 'Content-Length', Std.string( stat.size ) );
 		sendHeaders();
 		var f = File.read( path, true );
 		//if( size < bufSize ) //TODO
 		out.writeInput( f, stat.size );
+		//TODO gzip
+		//out.writeString( neko.zip.Compress.run( f.readAll(), 6 ).toString() );
 		f.close();
 	}
 
 	function sendError( code : Int, status : String, ?content : String ) {
-		returnCode = { code : code, text : status };
+		responseCode = { code : code, text : status };
 		if( content != null )
-			returnHeaders.set( 'Content-Length', Std.string( content.length ) );
+			responseHeaders.set( 'Content-Length', Std.string( content.length ) );
 		sendHeaders();
 		if( content != null )
 			out.writeString( content );
 	}
 
 	function sendHeaders() {
-		writeLine( 'HTTP/1.1 ${returnCode.code} ${returnCode.text}' );
-		for( k in returnHeaders.keys() )
-			writeLine( '$k: ${returnHeaders.get(k)}' );
+		writeLine( 'HTTP/1.1 ${responseCode.code} ${responseCode.text}' );
+		for( k in responseHeaders.keys() )
+			writeLine( '$k: ${responseHeaders.get(k)}' );
 		writeLine();
 	}
 

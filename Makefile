@@ -5,9 +5,11 @@
 # For debug build set: DEBUG=true
 #
 
-SRC = sys/*.hx sys/net/*.hx
-CPPFLAGS =
 DEBUG = false
+INSTALL_DIR = /usr/lib/wtri
+
+SRC = src/sys/*.hx src/sys/net/*.hx src/wtri/*.hx src/tpl/*.html
+CPPFLAGS =
 
 ifeq (${DEBUG},true)
 FLAGS = -debug -dce no
@@ -20,9 +22,9 @@ ifeq (${uname_M},x86_64)
 CPPFLAGS += -D HXCPP_M64
 endif
 
-HX = haxe -D dev_server \
+HX = haxe -D dev_server -cp src \
 	-resource tpl/index.html@index \
-	-resource tpl/404.html@404
+	-resource tpl/error.html@error
 
 all: dev-server
 
@@ -39,7 +41,18 @@ dev-server-cpp: $(SRC)
 #	@mkdir -p bin
 #	$(HX) -neko bin/wtri-ws.n -main haxe.WebSocketServer $(FLAGS)
 
+install: clean dev-server
+	mkdir -p $(INSTALL_DIR)
+	cp wtri.n $(INSTALL_DIR)
+	cp -r lib/ $(INSTALL_DIR)
+	cp data/wtri.sh /usr/bin/wtri
+	chmod +x /usr/bin/wtri
+
+uninstall:
+	rm -rf $(INSTALL_DIR)
+
 clean:
-	rm -rf bin
+	rm -rf build
+	rm -f wtri.n
 
 .PHONY: all dev-server dev-server-cpp clean
