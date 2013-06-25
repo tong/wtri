@@ -22,7 +22,6 @@ endif
 
 HX = haxe -D dev_server \
 	-resource tpl/index.html@index \
-	-resource tpl/config.html@config \
 	-resource tpl/404.html@404
 
 all: dev-server
