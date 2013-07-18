@@ -1,10 +1,10 @@
 package sys;
 
 import sys.net.Socket;
-import sys.net.ThreadSocketServer;
 import haxe.io.Bytes;
 
-class WebSocketServer extends ThreadSocketServer<WebSocketServerClient,String> {
+@:require(sys)
+class WebSocketServer<Client:WebSocketServerClient> extends sys.net.ThreadSocketServer<Client,String> {
 
 	public var host(default,null) : String;
 	public var port(default,null) : Int;
@@ -19,29 +19,30 @@ class WebSocketServer extends ThreadSocketServer<WebSocketServerClient,String> {
 		run( host, port );
 	}
 
-	/*
-	//TODO
 	public function stop() {
-		//active = false;
-	}
-	*/
-
-	public override function clientConnected( s : Socket ) : WebSocketServerClient {
-		trace( 'client connected ['+s.peer()+']' );
-		return new WebSocketServerClient( s );
+		throw 'stop thread server not implemented'; //TODO
 	}
 
+	override function clientConnected( s : Socket ) : Client {
+		return throw 'abstract method';
+	}
 
-	override function clientDisconnected( c : WebSocketServerClient ) {
-		trace( "client disconnected " );
- 	}
+	override function clientDisconnected( c : Client ) {
+		c.cleanup();
+	}
 
- 	override function readClientMessage( c : WebSocketServerClient, buf : Bytes, pos : Int, len : Int ) {
-		var r = c.read( buf, pos, len );
-		if( r == null )
+	override function readClientMessage( c : WebSocketServerClient, buf : Bytes, pos : Int, len : Int ) : { data : String, length : Int } {
+		var r = c.readData( buf, pos, len );
+		//trace(r);
+		switch(r) {
+		case 'handshaked':
+			c.handleConnect();
+			return { data : null, length : len };
+		case null:
 			return null;
+		}
 		c.processData( r );
-		return { msg : null, bytes : len }
+		return { data : null, length : len };
 	}
 	
 }

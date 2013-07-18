@@ -2,9 +2,17 @@ package sys;
 
 import haxe.io.Bytes;
 import sys.net.Socket;
-import sys.net.ThreadSocketServer;
 
-class WebServer<Client:WebServerClient> extends ThreadSocketServer<Client,String> {
+@:require(sys)
+class WebServer<Client:WebServerClient> extends sys.net.ThreadSocketServer<Client,String> {
+	/*
+	#if (cpp||neko)
+	sys.net.ThreadSocketServer<Client,String>
+	//sys.net.SocketServer<Client>
+	#elseif java
+	sys.net.SocketServer<Client>
+	#end {
+	*/
 
 	public var host(default,null) : String;
 	public var port(default,null) : Int;
@@ -25,13 +33,11 @@ class WebServer<Client:WebServerClient> extends ThreadSocketServer<Client,String
 	}
 
 	public function start() {
-		//active = true;
 		run( host, port );
 	}
 
-	//TODO
 	public function stop() {
-		throw 'stop thread server not implemented';
+		throw 'stop thread server not implemented'; //TODO
 	}
 
 	override function clientConnected( s : Socket ) : Client {
@@ -40,14 +46,12 @@ class WebServer<Client:WebServerClient> extends ThreadSocketServer<Client,String
 
 	override function clientDisconnected( c : Client ) {
 		c.cleanup();
- 	}
+	}
 
 	override function readClientMessage( c : Client, buf : Bytes, pos : Int, len : Int ) : { data : String, length : Int } {
 		var r = c.readRequest( buf, pos, len );
-		if( r == null ) {
-			//TODO hmmmm
+		if( r == null )
 			return null;
-		}
 		c.processRequest( r );
 		return { data : null, length : len };
 	}

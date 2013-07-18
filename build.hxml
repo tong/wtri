@@ -1,0 +1,13 @@
+
+-cp src
+--each
+
+--next
+-neko wtri.n
+-main wtri.WebServer
+-resource src/tpl/index.html@index
+-resource src/tpl/error.html@error
+
+--next
+-neko wtri-websocketserver.n
+-main wtri.WebSocketServer

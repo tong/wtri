@@ -6,10 +6,11 @@ import sys.net.Socket;
 import haxe.io.Bytes;
 import haxe.io.BytesInput;
 
+using Lambda;
 using StringTools;
 
-typedef Headers = Map<String,String>;
-typedef Params = Map<String,String>;
+typedef HTTPHeaders = Map<String,String>;
+typedef HTTPParams = Map<String,String>;
 
 enum HTTPMethod {
 	get;
@@ -20,11 +21,11 @@ enum HTTPMethod {
 typedef HTTPClientRequest = {
 	url : String,
 	version : String,
-	headers : Headers,
+	headers : HTTPHeaders,
 	method : HTTPMethod,
 	//res : String,
 	?contentType : String,
-	?params : Params,
+	?params : HTTPParams,
 	?data : String // post data
 }
 
@@ -33,7 +34,7 @@ typedef HTTClientResponse = {
 }
 */
 
-private typedef ReturnCode = {
+private typedef HTTPReturnCode = {
 	var code : Int;
 	var text : String;
 }
@@ -42,15 +43,18 @@ class WebServerClient {
 
 	public var root : String;
 	public var mime : Map<String,String>;
-	public var indexFileNames : Array<String>;
-	public var indexFileTypes : Array<String>;
+	//public var indexFileNames : Array<String>;
+	//public var indexFileTypes : Array<String>;
 	//public var keepAlive : Bool = true;
 	//public var compression : Bool;
-
+	//public var allowWebsocket : Bool;
+	//public var isWebsocket(default,null) : Bool;
+	
 	var socket : Socket;
 	var out : haxe.io.Output;
-	var responseCode : ReturnCode;
-	var responseHeaders : Headers;
+	var responseCode : HTTPReturnCode;
+	var responseHeaders : HTTPHeaders;
+	//var websocketReady : Bool;
 
 	public function new( socket : Socket, root : String ) {
 
@@ -62,7 +66,6 @@ class WebServerClient {
 			'css' 	=> 'text/css',
 			'gif' 	=> 'image/gif',
 			'html' 	=> 'text/html',
-			'hx'	=> 'text/haxe',
 			'jpg' 	=> 'image/jpeg',
 			'jpeg' 	=> 'image/jpeg',
 			'js' 	=> 'application/javascript',
@@ -76,9 +79,10 @@ class WebServerClient {
 			'wav' 	=> 'audio/x-wav',
 			'xml' 	=> 'text/xml'
 		];
-
-		indexFileNames = ['index'];
-		indexFileTypes = ['html','htm'];
+	//	allowWebsocket = true;
+	//	isWebsocket = websocketReady = false;
+	//	indexFileNames = ['index'];
+	//	indexFileTypes = ['html','htm'];
 		responseCode = { code : 200, text : "OK" };
 	}
 
@@ -95,15 +99,15 @@ class WebServerClient {
 			return null;
 		}
 
-		var url = rexp.matched(2); //TODO check url, security! no root up
+		var url = rexp.matched(2); //TODO check url, security!
 		var version = rexp.matched(3);
 
 		var r : HTTPClientRequest = {
 			url : url,
 			version : version,
-			headers : new Headers(),
+			headers : new HTTPHeaders(),
 			method : null,
-			params : new Params(),
+			params : new HTTPParams(),
 			contentType : null
 		};
 
@@ -112,15 +116,26 @@ class WebServerClient {
 		case 'POST': post;
 		case 'GET': get;
 		default:
-			trace("TODO handle http method "+_method );
+			trace( "TODO handle http method "+_method );
 			null;
 		}
 
-		r.headers = new Headers();
+		r.headers = new HTTPHeaders();
 		var data : String = null;
 		var exp_header = ~/([a-zA-Z-]+): (.+)/;
 		while( true ) {
-			var line = i.readLine();
+			line = i.readLine();
+			/*
+			if( line == 'Upgrade: websocket' ) {
+				if( !websocketReady ) {
+					var res = sys.net.WebSocketUtil.handshake( i );
+					if( res != null ) {
+						websocketReady = true;
+						out.writeString( res );
+					}
+				}
+			}
+			*/
 			if( line.length == 0 ) {
 				if( r.method == post )
 					data = i.readLine(); 
@@ -135,7 +150,7 @@ class WebServerClient {
 
 		var i = r.url.indexOf( '?' );
 		if( i != -1 ) {
-			r.params = new Params();
+			r.params = new HTTPParams();
 			var s = url.substr( i+1 );
 			r.url = r.url.substr( 0, i );
 			for( p in s.split('&') ) {
@@ -155,8 +170,6 @@ class WebServerClient {
 		var path = if( customRoot != null ) customRoot else root;
 		path += r.url;
 
-		//trace("PPPPPPPPPPPPPPPPPPPPP: "+path );
-
 		responseCode = { code : 200, text : "OK" };
 		responseHeaders = createResponseHeaders();
 
@@ -165,7 +178,18 @@ class WebServerClient {
 			fileNotFound( path, r.url );
 		} else {
 
-			responseHeaders.set( 'Content-Type', r.contentType );
+			var contentType : String = null;
+			if( r.headers.exists( 'Accept' ) ) {
+				var ctype =  r.headers.get('Accept');
+				ctype = ctype.substr( 0, ctype.indexOf(',') ).trim();
+				if( mime.has( ctype ) )
+					contentType = ctype;
+			}
+			if( contentType == null ) {
+				var ext = filePath.substr( filePath.lastIndexOf( '.' )+1 );
+				contentType = mime.exists( ext ) ? mime.get( ext ) : 'unknown/unknown';
+			}
+			responseHeaders.set( 'Content-Type', contentType );
 
 			/* TODO execute neko modules
 			if( r.url.endsWith('.n') ) {
@@ -184,16 +208,18 @@ class WebServerClient {
 	/**
 	*/
 	public function cleanup() {
+		//socket.close();
 	}
 
 	function findFile( path : String ) : String {
 		if( !FileSystem.exists( path ) )
 			return null;
-		if( FileSystem.isDirectory( path ) )
-			return findIndexFile( path );
+		//if( FileSystem.isDirectory( path ) )
+		//	return findIndexFile( path );
 		return path;
 	}
 
+	/*
 	function findIndexFile( path : String ) : String {
 		var r = new EReg( '('+indexFileNames.join( '|' )+').('+indexFileTypes.join( '|' )+')$', '' );
 		for( f in FileSystem.readDirectory( path) ) {
@@ -202,14 +228,15 @@ class WebServerClient {
 		}
 		return null;
 	}
+	*/
 
 	function fileNotFound( path : String, url : String, ?content : String ) {
 		if( content == null ) content = '404 Not Found - /$url';
 		sendError( 404, 'Not Found', content );
 	}
 
-	function createResponseHeaders() : Headers {
-		var h = new Headers();
+	function createResponseHeaders() : HTTPHeaders {
+		var h = new HTTPHeaders();
 		#if cpp
 		//TODO  Date.format %A- not implemented yet
 		h.set( 'Date', Date.now().toString() );
