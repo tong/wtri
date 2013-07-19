@@ -14,7 +14,7 @@ var socket;
 var btn_socket;
 
 function onSocketOpen() {
-	btn_socket.hide();
+	btn_socket.text('CONNECTED');
 	console.log( 'Socket connected' );
 	socket.send( 'Hello!' );
 }
@@ -68,10 +68,10 @@ $(document).ready(function(){
 </header>
 <div id="content">
 	<div><a href="1.html">1</a> | <a href="1.html">2</a></div>
-	<embed src="haxe.svg" type="image/svg+xml" style="margin-top:20px;margin-bottom:20px;"/>
 	<!--
 	<div><button id="btn_post">POST</button></div>
 	-->
+	<div><img src="haxe.png" id="haxe-logo"/></div>
 	<div><button id="btn_socket">CONNECT SOCKET</button></div>
 </div>
 </body>

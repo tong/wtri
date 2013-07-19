@@ -33,12 +33,11 @@ class WebSocketServer<Client:WebSocketServerClient> extends sys.net.ThreadSocket
 
 	override function readClientMessage( c : WebSocketServerClient, buf : Bytes, pos : Int, len : Int ) : { data : String, length : Int } {
 		var r = c.readData( buf, pos, len );
-		//trace(r);
 		switch(r) {
 		case 'handshaked':
 			c.handleConnect();
 			return { data : null, length : len };
-		case null:
+		 case x if(x == null):
 			return null;
 		}
 		c.processData( r );
