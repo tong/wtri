@@ -1,11 +1,7 @@
-
+-neko run.n
+-main haxe.WebServer
+-lib hxargs
 -cp src
---each
-
---next
--neko wtri.n
--main wtri.WebServer
-
---next
--neko wtri-websocketserver.n
--main wtri.WebSocketServer
+-dce full
+#--no-traces
+-D dev_server
