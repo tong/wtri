@@ -15,15 +15,6 @@ class SocketServerClient {
 		output = socket.output;
 	}
 
-	/*
-	public function read( buf : Bytes, pos : Int, len : Int ) : T {
-		throw 'SocketServerClient read not implemented';
-	}
-
-	public function process<T>( m : T ) {
-	}
-	*/
-
 	public function cleanup() {
 		//socket.close();
 	}

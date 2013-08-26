@@ -1,6 +1,5 @@
 package sys.net;
 
-import sys.net.WebServerClient;
 import haxe.io.Bytes;
 import haxe.net.HTTPRequest;
 import haxe.net.HTTPError;
@@ -9,7 +8,10 @@ import haxe.net.HTTPError;
 	Base class for web servers
 */
 @:require(sys)
-class WebServer<Client:WebServerClient> extends sys.net.ThreadSocketServer<Client,HTTPRequest> {
+class WebServer<Client:WebServerClient> extends
+	#if (php||wtri_no_threads)  sys.net.SocketServer<Client,HTTPRequest>
+	#elseif (cpp||neko) sys.net.ThreadSocketServer<Client,HTTPRequest>
+	#end {
 
 	override function clientMessage( c : Client, m : HTTPRequest ) {
 		c.processRequest( m );

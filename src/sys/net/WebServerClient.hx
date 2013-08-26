@@ -2,9 +2,8 @@ package sys.net;
 
 import haxe.io.Bytes;
 import haxe.net.HTTPRequest;
+import haxe.net.HTTPHeaders;
 
-private typedef HTTPHeaders = Map<String,String>;
-private typedef HTTPParams = Map<String,String>;
 private typedef HTTPReturnCode = {
 	var code : Int;
 	var text : String;
@@ -35,7 +34,7 @@ class WebServerClient extends SocketServerClient {
 			'mpg' 	=> 'audio/mpeg',
 			'mpeg' 	=> 'audio/mpeg',
 			'ogg' 	=> 'application/ogg',
-			'php' 	=> 'text/php',
+			//'php' 	=> 'text/php',
 			'png' 	=> 'image/png',
 			'txt' 	=> 'text/plain',
 			'wav' 	=> 'audio/x-wav',

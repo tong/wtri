@@ -1,7 +1,11 @@
--neko run.n
--main haxe.WebServer
+-main haxe.net.WebServer
 -lib hxargs
 -cp src
 -dce full
 #--no-traces
--D dev_server
+-D haxe_dev_server
+#-D wtri_no_threads
+--each
+
+--next
+-neko wtri.n

@@ -2,14 +2,14 @@ package haxe.net;
 
 class HTTPError {
 
-	public var statusCode : Int;
+	public var code : Int;
 
-	public function new( statusCode : Int ) {
-		this.statusCode = statusCode;
+	public function new( code : Int ) {
+		this.code = code;
 	}
 
 	public function toString() : String {
-		return 'HTTPError $statusCode';
+		return 'HTTPError $code';
 	}
 
 }

@@ -1,8 +1,5 @@
 package haxe.net;
 
-/**
-	http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
-*/
 class HTTPStatusCode {
 
 	// 1xx Informational
