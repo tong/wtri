@@ -1,10 +1,8 @@
--main haxe.net.WebServer
--lib hxargs
 -cp src
+-lib hxargs
+-main wtri.WebServer
 -dce full
 #--no-traces
--D haxe_dev_server
-#-D wtri_no_threads
 --each
 
 --next

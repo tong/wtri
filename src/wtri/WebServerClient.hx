@@ -1,47 +1,61 @@
-package haxe.net;
+package wtri;
 
-#if sys
 import sys.FileSystem;
 import sys.io.File;
 import sys.net.Socket;
-#elseif js
-import js.net.Socket;
-#end
 import haxe.Template;
+import haxe.net.HTTPHeaders;
 import haxe.net.HTTPRequest;
 import haxe.net.HTTPStatusCode;
 
-using Lambda;
 using StringTools;
 
-class WebServerClient extends
-	#if nodejs js.net.WebServerClient
-	#elseif sys sys.net.WebServerClient
-	#end {
+class WebServerClient extends sys.net.WebServerClient {
 
 	public var indexFiles : Array<String>;
 	public var indexTypes : Array<String>;
 
 	var root : String;
-	var templateError : Template;
-	var templateIndex : Template;
+	var tpl_error : Template;
+	var tpl_index : Template;
 
 	public function new( socket : Socket, root : String ) {
 
 		super( socket );
 		this.root = root;
 
+		mime = [
+			'css' 	=> 'text/css',
+			'gif' 	=> 'image/gif',
+			'html' 	=> 'text/html',
+			'jpg' 	=> 'image/jpeg',
+			'jpeg' 	=> 'image/jpeg',
+			'js' 	=> 'application/javascript',
+			//'mp3' 	=> 'audio/mpeg',
+			'mpg' 	=> 'audio/mpeg',
+			'mpeg' 	=> 'audio/mpeg',
+			'ogg' 	=> 'application/ogg',
+			//'php' 	=> 'text/php',
+			'png' 	=> 'image/png',
+			'txt' 	=> 'text/plain',
+			'wav' 	=> 'audio/x-wav',
+			'xml' 	=> 'text/xml'
+		];
+
 		indexFiles = ['index'];
 		indexTypes = ['html','htm'];
 
-		templateError = new Template( File.getContent( 'res/error.html' ) );
-		templateIndex = new Template( File.getContent( 'res/index.html' ) );
+		tpl_error = new Template( File.getContent( 'res/error.html' ) );
+		tpl_index = new Template( File.getContent( 'res/index.html' ) );
 	}
 
+	/**
+		Process http request
+	*/
 	public override function processRequest( r : HTTPRequest, ?root : String ) {
 
 		super.processRequest( r, root );
-
+		
 		var path = ( root != null ) ? root : this.root;
 		path += r.url;
 
@@ -53,7 +67,7 @@ class WebServerClient extends
 			if( r.headers.exists( 'Accept' ) ) {
 				var ctype = r.headers.get('Accept');
 				ctype = ctype.substr( 0, ctype.indexOf(',') ).trim();
-				if( mime.has( ctype ) )
+				if( mime.exists( ctype ) )
 					contentType = ctype;
 			}
 			if( contentType == null ) {
@@ -82,6 +96,7 @@ class WebServerClient extends
 		return h;
 	}
 
+
 	function findFile( path : String ) : String {
 		if( !FileSystem.exists( path ) )
 			return null;
@@ -103,7 +118,7 @@ class WebServerClient extends
 	function fileNotFound( path : String, url : String, ?html : String ) {
 		if( !FileSystem.exists( path ) || !FileSystem.isDirectory( path ) ) {
 			if( html == null )
-				html = templateError.execute( { code : HTTPStatusCode.NOT_FOUND, status : 'Not Found', content : '<h1>404 Not Found</h1>' } );
+				html = tpl_error.execute( { code : HTTPStatusCode.NOT_FOUND, status : 'Not Found', content : '<h1>404 Not Found</h1>' } );
 			sendData( html );
 			return;
 		}
@@ -138,7 +153,7 @@ class WebServerClient extends
 			files : files, 
 			address : WebServer.name+' '+socket.host().host+':'+socket.host().port,
 		};
-		sendData( templateIndex.execute( ctx ) );
+		sendData( tpl_index.execute( ctx ) );
 	}
 
 	function sendFile( path : String ) {
@@ -164,67 +179,5 @@ class WebServerClient extends
 		log.add( '"'+(if( r.url == null || r.url.length == 0 ) '/' else r.url )+'"' );
 		Sys.println( log.toString() );
 	}
-}
 
-/**
-	Development web server
-*/
-class WebServer extends
-	#if nodejs js.net.WebServer<WebServerClient>
-	#elseif sys sys.net.WebServer<WebServerClient>
-	#end {
-
-	public static inline var VERSION = '0.2';
-
-	public static var name = "Haxe Development Server";
-
-	/** Servers root path in filesystem */
-	public var root : String;
-
-	public function new( host : String, port : Int, root : String ) {
-		
-		root = root.trim();
-		if( !root.endsWith('/') ) root += '/';
-		
-		super( host, port );
-		this.root = root;
-	}
-
-	public override function start() {
-		Sys.println( 'Starting web server : $host:$port:$root' );
-		super.start();
-	}
-
-	public override function clientConnected( s : Socket ) : WebServerClient {
-		trace("clientConnected");
-		return new WebServerClient( s, root );
-	}
-
-	#if haxe_dev_server
-
-	static function main() {
-		var host = 'localhost';
-		var port = 80;
-		var root = Sys.getCwd();
-		var args = Sys.args();
-		var argHandler = hxargs.Args.generate([
-			@doc("Host name / IP address") ["-host",'-h','-ip'] => function(v:String) host = v,
-			@doc("Set the output path for generated pages") ["-port",'-p'] => function(v:String) port = Std.parseInt(v),
-			@doc("Set web servers root path") ["-root","-r"] => function(v:String) root = v,
-			_ => function(arg:String) throw "Unknown command: " +arg
-		]);
-		argHandler.parse( args );
-		if( !FileSystem.exists( root ) ) {
-			Sys.println( 'Root path not found : $root' );
-			Sys.exit( 1 );
-		}
-		var s = new WebServer( host, port, root );
-		try s.start() catch(e:Dynamic) {
-			Sys.println( e );
-			Sys.exit( 1 );
-		}
-	}
-
-	#end
-	
 }

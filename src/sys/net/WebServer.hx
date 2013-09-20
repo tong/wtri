@@ -1,17 +1,14 @@
 package sys.net;
 
 import haxe.io.Bytes;
-import haxe.net.HTTPRequest;
 import haxe.net.HTTPError;
+import haxe.net.HTTPRequest;
 
-/**
-	Base class for web servers
-*/
-@:require(sys)
-class WebServer<Client:WebServerClient> extends
-	#if (php||wtri_no_threads)  sys.net.SocketServer<Client,HTTPRequest>
-	#elseif (cpp||neko) sys.net.ThreadSocketServer<Client,HTTPRequest>
-	#end {
+class WebServer<Client:WebServerClient> extends ThreadSocketServer<Client,HTTPRequest> {
+
+	public function new( host : String, port : Int ) {
+		super( host, port );
+	}
 
 	override function clientMessage( c : Client, m : HTTPRequest ) {
 		c.processRequest( m );
@@ -27,5 +24,5 @@ class WebServer<Client:WebServerClient> extends
 		}
 		return { msg : r, len : len };
 	}
-
+	
 }

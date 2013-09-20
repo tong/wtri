@@ -28,8 +28,7 @@ private typedef ClientInfos<Client> = {
 }
 
 @:require(cpp||neko)
-class ThreadSocketServer<Client:SocketServerClient,Message> {
-//extends sys.net.SocketServer<Client,Message> {
+class ThreadSocketServer<Client,Message> {
 
 	public dynamic function clientConnected( s : Socket ) : Client return null;
 	public dynamic function clientDisconnected( c : Client ) {}
@@ -114,7 +113,6 @@ class ThreadSocketServer<Client:SocketServerClient,Message> {
 	}
 
 	function readClientData( c : ClientInfos<Client> ) {
-		trace("readClientData");
 		var available = c.buf.length - c.bufpos;
 		if( available == 0 ) {
 			var nsize = c.buf.length * 2;

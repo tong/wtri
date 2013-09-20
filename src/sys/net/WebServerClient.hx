@@ -1,5 +1,6 @@
 package sys.net;
 
+import sys.net.Socket;
 import haxe.io.Bytes;
 import haxe.net.HTTPRequest;
 import haxe.net.HTTPHeaders;
@@ -9,40 +10,17 @@ private typedef HTTPReturnCode = {
 	var text : String;
 }
 
-class WebServerClient extends SocketServerClient {
+class WebServerClient {
 
-	public var mime : Map<String,String>;
-	//public var keepAlive : Bool = true;
-	//public var compression : Bool;
-	//public var allowWebsocket : Bool;
-	//public var isWebsocket(default,null) : Bool;
-	
+	var mime : Map<String,String>;
+	var socket : Socket;
+	var output : haxe.io.Output;
 	var responseCode : HTTPReturnCode;
 	var responseHeaders : HTTPHeaders;
-	//var websocketReady : Bool;
 
 	public function new( socket : Socket ) {
-		super( socket );
-		mime = [
-			'css' 	=> 'text/css',
-			'gif' 	=> 'image/gif',
-			'html' 	=> 'text/html',
-			'jpg' 	=> 'image/jpeg',
-			'jpeg' 	=> 'image/jpeg',
-			'js' 	=> 'application/javascript',
-			'mp3' 	=> 'audio/mpeg',
-			'mpg' 	=> 'audio/mpeg',
-			'mpeg' 	=> 'audio/mpeg',
-			'ogg' 	=> 'application/ogg',
-			//'php' 	=> 'text/php',
-			'png' 	=> 'image/png',
-			'txt' 	=> 'text/plain',
-			'wav' 	=> 'audio/x-wav',
-			'xml' 	=> 'text/xml'
-		];
-		//allowWebsocket = true;
-		//isWebsocket = websocketReady = false;
-		responseCode = { code : 200, text : "OK" };
+		this.socket = socket;
+		output = socket.output;
 	}
 
 	/**
@@ -76,6 +54,7 @@ class WebServerClient extends SocketServerClient {
 			h.set( 'Content-Encoding', 'gzip' );
 		}
 		*/
+		//h.set( 'Server', WebServer.name );
 		return h;
 	}
 
