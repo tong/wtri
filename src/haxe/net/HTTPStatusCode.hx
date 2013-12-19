@@ -94,14 +94,4 @@ class HTTPStatusCode {
 	public static inline var NETWORK_READ_TIMEOUT_ERROR = 598;
 	public static inline var NETWORK_CONNECT_TIMEOUT_ERROR = 599;
 
-	/*
-	public var code : String;
-	public var text : String;
-
-	public function new( code : String, ?text : String ) {
-		this.code = code;
-		this.text = text;
-	}
-	*/
-
 }

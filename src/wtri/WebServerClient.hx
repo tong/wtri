@@ -12,8 +12,8 @@ using StringTools;
 
 class WebServerClient extends sys.net.WebServerClient {
 
-	public var indexFiles : Array<String>;
-	public var indexTypes : Array<String>;
+	public var indexFileNames : Array<String>;
+	public var indexFileTypes : Array<String>;
 
 	var root : String;
 	var tpl_error : Template;
@@ -42,8 +42,8 @@ class WebServerClient extends sys.net.WebServerClient {
 			'xml' 	=> 'text/xml'
 		];
 
-		indexFiles = ['index'];
-		indexTypes = ['html','htm'];
+		indexFileNames = ['index'];
+		indexFileTypes = ['html','htm'];
 
 		tpl_error = new Template( File.getContent( 'res/error.html' ) );
 		tpl_index = new Template( File.getContent( 'res/index.html' ) );
@@ -106,7 +106,8 @@ class WebServerClient extends sys.net.WebServerClient {
 	}
 
 	function findIndexFile( path : String ) : String {
-		var r = new EReg( '('+indexFiles.join( '|' )+').('+indexTypes.join( '|' )+')$', '' );
+		//var r = new EReg( '('+indexFileNames.join( '|' )+').('+indexFileTypes.join( '|' )+')$', '' );
+		var r = new EReg( '(${indexFileNames.join("|")}).(${indexFileTypes.join("|")})$', '' );
 		for( f in FileSystem.readDirectory( path) ) {
 			if( r.match( f ) ) {
 				return path + r.matched(1) + '.' + r.matched(2);
@@ -151,7 +152,7 @@ class WebServerClient extends sys.net.WebServerClient {
 			path : url,
 			dirs : dirs,
 			files : files, 
-			address : WebServer.name+' '+socket.host().host+':'+socket.host().port,
+			address : wtri.WebServer.name+' '+socket.host().host+':'+socket.host().port,
 		};
 		sendData( tpl_index.execute( ctx ) );
 	}
