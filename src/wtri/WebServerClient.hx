@@ -16,8 +16,6 @@ class WebServerClient extends sys.net.WebServerClient {
 	public var indexFileTypes : Array<String>;
 
 	var root : String;
-	var tpl_error : Template;
-	var tpl_index : Template;
 
 	public function new( socket : Socket, root : String ) {
 
@@ -44,9 +42,6 @@ class WebServerClient extends sys.net.WebServerClient {
 
 		indexFileNames = ['index'];
 		indexFileTypes = ['html','htm'];
-
-		tpl_error = new Template( File.getContent( 'res/error.html' ) );
-		tpl_index = new Template( File.getContent( 'res/index.html' ) );
 	}
 
 	/**
@@ -96,7 +91,6 @@ class WebServerClient extends sys.net.WebServerClient {
 		return h;
 	}
 
-
 	function findFile( path : String ) : String {
 		if( !FileSystem.exists( path ) )
 			return null;
@@ -106,7 +100,6 @@ class WebServerClient extends sys.net.WebServerClient {
 	}
 
 	function findIndexFile( path : String ) : String {
-		//var r = new EReg( '('+indexFileNames.join( '|' )+').('+indexFileTypes.join( '|' )+')$', '' );
 		var r = new EReg( '(${indexFileNames.join("|")}).(${indexFileTypes.join("|")})$', '' );
 		for( f in FileSystem.readDirectory( path) ) {
 			if( r.match( f ) ) {
@@ -119,31 +112,29 @@ class WebServerClient extends sys.net.WebServerClient {
 	function fileNotFound( path : String, url : String, ?html : String ) {
 		if( !FileSystem.exists( path ) || !FileSystem.isDirectory( path ) ) {
 			if( html == null )
-				html = tpl_error.execute( { code : HTTPStatusCode.NOT_FOUND, status : 'Not Found', content : '<h1>404 Not Found</h1>' } );
+				html = createTemplateHtml( 'error', { code : HTTPStatusCode.NOT_FOUND, status : 'Not Found', content : '<h1>404 Not Found</h1>' } );
 			sendData( html );
 			return;
 		}
 		var now = Date.now();
-		var dirs = [], files = [];
+		var dirs = new Array<Dynamic>();
+		var files = new Array<Dynamic>();
 		for( f in FileSystem.readDirectory( path ) ) {
 			var p = path+f;
-			var fstat = FileSystem.stat( p );
-			var mtime = fstat.mtime;
+			var stat = FileSystem.stat( p );
+			var mtime = stat.mtime;
 			var modified = '';
 			if( now.getFullYear() != mtime.getFullYear() ) modified += mtime.getFullYear()+'-';
-			#if cpp
-			modified += Date.now().toString();
-			#elseif neko
-			modified += DateTools.format( mtime, '%d-%B %H:%M:%S' );
-			#end
+			modified += getDateTime( mtime );
 			var o : Dynamic = { name : f, path : f, modified : modified };
 			if( FileSystem.isDirectory( p ) ) {
 				o.items = FileSystem.readDirectory( p ).length;
 				dirs.push( o );
 			} else {
-				o.size = if( fstat.size > 1024*1024 ) Std.int( fstat.size/(1024*1024) )+'MB';
-					else if( fstat.size > 1024 ) Std.int( fstat.size/1024 )+'KB';
-					else fstat.size;
+				o.size =
+					if( stat.size > 1024*1024 ) Std.int( stat.size/(1024*1024) )+'MB';
+					else if( stat.size > 1024 ) Std.int( stat.size/1024 )+'KB';
+					else stat.size;
 				files.push( o );
 			}
 		}
@@ -152,9 +143,9 @@ class WebServerClient extends sys.net.WebServerClient {
 			path : url,
 			dirs : dirs,
 			files : files, 
-			address : wtri.WebServer.name+' '+socket.host().host+':'+socket.host().port,
+			address : WebServer.name+' '+socket.host().host+':'+socket.host().port,
 		};
-		sendData( tpl_index.execute( ctx ) );
+		sendData( createTemplateHtml( 'index', ctx ) );
 	}
 
 	function sendFile( path : String ) {
@@ -170,15 +161,33 @@ class WebServerClient extends sys.net.WebServerClient {
 	}
 
 	function logHTTPRequest( r : HTTPRequest ) {
-		var log = new StringBuf();
+		var s = new StringBuf();
 		var now = Date.now();
 		var time = DateTools.format( Date.now(), '%d/%b/%Y|%H:%M:%S' );
-		log.add( time );
-		log.add( ' - ' );
-		log.add( if( r.method == null ) 'GET' else Std.string( r.method ).toUpperCase() );
-		log.add( ' - ' );
-		log.add( '"'+(if( r.url == null || r.url.length == 0 ) '/' else r.url )+'"' );
-		Sys.println( log.toString() );
+		s.add( time );
+		s.add( ' - ' );
+		s.add( if( r.method == null ) 'GET' else Std.string( r.method ).toUpperCase() );
+		s.add( ' - ' );
+		s.add( '"'+(if( r.url == null || r.url.length == 0 ) '/' else r.url )+'"' );
+		Sys.println( s.toString() );
+	}
+
+	static inline function getDateTime( ?time : Date ) : String {
+		if( time == null ) time = Date.now();
+		return
+			#if cpp
+			time.toString()
+			#else
+			DateTools.format( time, '%d-%B %H:%M:%S' )
+			#end;
+	}
+
+	static inline function createTemplate( id : String ) : Template {
+		return new Template( haxe.Resource.getString( id ) );
+	}
+
+	static inline function createTemplateHtml( id : String, ctx : Dynamic ) : String {
+		return createTemplate( id ).execute( (ctx == null) ? {} : ctx );
 	}
 
 }
