@@ -2,6 +2,7 @@ package sys.net;
 
 import sys.net.Socket;
 import haxe.io.Bytes;
+import haxe.io.Path;
 import haxe.net.HTTPRequest;
 import haxe.net.HTTPHeaders;
 
@@ -10,9 +11,12 @@ private typedef HTTPReturnCode = {
 	var text : String;
 }
 
+/**
+*/
 class WebServerClient {
 
-	var mime : Map<String,String>;
+	public var mime : Map<String,String>;
+
 	var socket : Socket;
 	var output : haxe.io.Output;
 	var responseCode : HTTPReturnCode;
@@ -21,6 +25,17 @@ class WebServerClient {
 	public function new( socket : Socket ) {
 		this.socket = socket;
 		output = socket.output;
+		mime = [
+			'css' 	=> 'text/css',
+			'gif' 	=> 'image/gif',
+			'html' 	=> 'text/html',
+			'jpg' 	=> 'image/jpeg',
+			'jpeg' 	=> 'image/jpeg',
+			'js' 	=> 'application/javascript',
+			'png' 	=> 'image/png',
+			'txt' 	=> 'text/plain',
+			'xml' 	=> 'text/xml'
+		];
 	}
 
 	/**
@@ -36,6 +51,11 @@ class WebServerClient {
 	public function processRequest( r : HTTPRequest, ?root : String ) {
 		responseCode = { code : 200, text : "OK" };
 		responseHeaders = createResponseHeaders();
+	}
+
+	function getFileContentType( path : String ) : String {
+		var x = Path.extension( path );
+		return mime.exists(x) ? mime.get(x) : 'unknown/unknown';
 	}
 
 	function createResponseHeaders() : HTTPHeaders {
@@ -61,26 +81,23 @@ class WebServerClient {
 	function sendData( data : String ) {
 		responseHeaders.set( 'Content-Length', Std.string( data.length ) );
 		sendHeaders();
+		//TODO buffered send
 		output.writeString( data );
 	}
 
 	function sendError( code : Int, status : String, ?content : String ) {
 		responseCode = { code : code, text : status };
-		if( content != null )
-			responseHeaders.set( 'Content-Length', Std.string( content.length ) );
+		if( content != null ) responseHeaders.set( 'Content-Length', Std.string( content.length ) );
 		sendHeaders();
-		if( content != null )
-			output.writeString( content );
+		if( content != null ) output.writeString( content );
 	}
 
 	function sendHeaders() {
 		writeLine( 'HTTP/1.1 ${responseCode.code} ${responseCode.text}' );
-		for( k in responseHeaders.keys() )
-			writeLine( '$k: ${responseHeaders.get(k)}' );
+		for( k in responseHeaders.keys() ) writeLine( '$k: ${responseHeaders.get(k)}' );
 		writeLine();
 	}
 
-	inline function writeLine( s : String = "" )
-		output.writeString( '$s\r\n' );
+	inline function writeLine( s : String = "" ) output.writeString( '$s\r\n' );
 
 }

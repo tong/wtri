@@ -22,6 +22,7 @@ class WebServerClient extends sys.net.WebServerClient {
 		super( socket );
 		this.root = root;
 
+		/*
 		mime = [
 			'css' 	=> 'text/css',
 			'gif' 	=> 'image/gif',
@@ -39,6 +40,14 @@ class WebServerClient extends sys.net.WebServerClient {
 			'wav' 	=> 'audio/x-wav',
 			'xml' 	=> 'text/xml'
 		];
+		*/
+
+		mime.set( 'mpg', 'audio/mpeg' );
+		mime.set( 'mpeg', 'audio/mpeg' );
+		mime.set( 'ogg', 'application/ogg' );
+		mime.set( 'png', 'image/png' );
+		mime.set( 'wav', 'audio/x-wav' );
+		mime.set( 'xml', 'text/xml' );
 
 		indexFileNames = ['index'];
 		indexFileTypes = ['html','htm'];
@@ -51,7 +60,7 @@ class WebServerClient extends sys.net.WebServerClient {
 
 		super.processRequest( r, root );
 		
-		var path = ( root != null ) ? root : this.root;
+		var path = (root != null) ? root : this.root;
 		path += r.url;
 
 		var filePath = findFile( path );
@@ -60,15 +69,11 @@ class WebServerClient extends sys.net.WebServerClient {
 		} else {
 			var contentType : String = null;
 			if( r.headers.exists( 'Accept' ) ) {
-				var ctype = r.headers.get('Accept');
-				ctype = ctype.substr( 0, ctype.indexOf(',') ).trim();
-				if( mime.exists( ctype ) )
-					contentType = ctype;
+				var ctype = r.headers.get( 'Accept' );
+				ctype = ctype.substr( 0, ctype.indexOf( ',' ) ).trim();
+				if( mime.exists( ctype ) ) contentType = ctype;
 			}
-			if( contentType == null ) {
-				var ext = filePath.substr( filePath.lastIndexOf( '.' )+1 );
-				contentType = mime.exists( ext ) ? mime.get( ext ) : 'unknown/unknown';
-			}
+			if( contentType == null ) contentType = getFileContentType( filePath );
 			responseHeaders.set( 'Content-Type', contentType );
 			/* TODO execute neko modules
 			if( r.url.endsWith('.n') ) {
