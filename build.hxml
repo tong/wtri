@@ -11,6 +11,7 @@
 --next
 -neko wtri.n
 
-#--next
-#-cpp build
-#-cmd mv build/WebServer ./wtri
+--next
+-cpp build
+#-D HXCPP_M64
+-cmd mv build/WebServer ./wtri

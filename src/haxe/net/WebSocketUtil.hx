@@ -10,13 +10,13 @@ class WebSocketUtil {
 
 	/***/
 	public static inline var MAGIC_STRING = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-	
+
 	/**
 	*/
 	public static function read( buf : Bytes, pos : Int, len : Int ) : String {
 		var i = new BytesInput( buf, pos, len );
 		switch( i.readByte() ) {
-		case 0x00 :	
+		case 0x00 :
 			var s = new StringBuf();
 			var b : Int;
 			while( ( b = i.readByte() ) != 0xFF )
@@ -53,22 +53,22 @@ class WebSocketUtil {
 
 	/**
 	*/
-	public static function write( o : Output, t : String ) {
+	public static function write( o : Output, s : String ) {
 		o.writeByte( 0x81 );
-		var len = if( t.length < 126 ) t.length else if( t.length < 65536 ) 126 else 127;
+		var len = if( s.length < 126 ) s.length else if( s.length < 65536 ) 126 else 127;
 		o.writeByte( len | 0x00 );
-		if( t.length >= 126 ) {
-			if( t.length < 65536 ) {
-				o.writeByte( (t.length >> 8) & 0xFF );
-				o.writeByte( t.length & 0xFF );
+		if( s.length >= 126 ) {
+			if( s.length < 65536 ) {
+				o.writeByte( (s.length >> 8) & 0xFF );
+				o.writeByte( s.length & 0xFF );
 			} else {
-				o.writeByte( (t.length >> 24) & 0xFF );
-				o.writeByte( (t.length >> 16) & 0xFF );
-				o.writeByte( (t.length >> 8) & 0xFF );
-				o.writeByte( t.length & 0xFF );
+				o.writeByte( (s.length >> 24) & 0xFF );
+				o.writeByte( (s.length >> 16) & 0xFF );
+				o.writeByte( (s.length >> 8) & 0xFF );
+				o.writeByte( s.length & 0xFF );
 			}
 		}
-		o.writeString( t );
+		o.writeString( s );
 	}
 
 	/**

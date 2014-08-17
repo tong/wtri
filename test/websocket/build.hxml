@@ -1,0 +1,3 @@
+-neko server.n
+-main App
+-cp ../../src

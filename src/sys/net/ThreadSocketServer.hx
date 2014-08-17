@@ -1,5 +1,14 @@
 package sys.net;
 
+/*
+typedef ThreadServer = 
+	#if cpp
+	cpp.net.ThreadServer<Client,Message>
+	#elseif neko
+	neko.net.ThreadServer<Client,Message>
+	#end;
+*/
+
 import sys.net.Socket;
 import haxe.io.Bytes;
 #if cpp

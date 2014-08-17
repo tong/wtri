@@ -7,6 +7,9 @@ import sys.net.Socket;
 using StringTools;
 using haxe.io.Path;
 
+/**
+	Development web server
+*/
 class WebServer extends sys.net.WebServer<WebServerClient> {
 
 	public static var name = "Haxe Development Server";
@@ -21,7 +24,7 @@ class WebServer extends sys.net.WebServer<WebServerClient> {
 	}
 
 	public override function start() {
-		trace( 'Starting web server : $host:$port:$root' );
+		println( 'Starting webserver: $host:$port:$root' );
 		super.start();
 	}
 

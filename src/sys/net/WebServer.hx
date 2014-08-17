@@ -4,6 +4,15 @@ import haxe.io.Bytes;
 import haxe.net.HTTPError;
 import haxe.net.HTTPRequest;
 
+/*
+#if cpp
+import cpp.net.ThreadServer;
+#elseif neko
+import neko.net.ThreadServer;
+#end
+*/
+
+//class WebServer<Client:WebServerClient> extends ThreadSocketServer<Client,HTTPRequest> {
 class WebServer<Client:WebServerClient> extends ThreadSocketServer<Client,HTTPRequest> {
 
 	public function new( host : String, port : Int ) {
