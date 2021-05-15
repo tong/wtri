@@ -1,27 +1,27 @@
 package wtri;
-
+/* 
 #if hl
 typedef Stream = hl.uv.Stream;
-#elseif sys
+
+#elseif sys */
 
 import sys.net.Socket;
 
 class Stream {
 
-    var socket : Socket;
+    public final socket : Socket;
 
-    public function new( socket : Socket ) {
+    public inline function new( socket : Socket ) {
         this.socket = socket;
     }
 
-    public function write( bytes : Bytes ) {
+    public inline function write( bytes : Bytes ) {
         socket.output.write( bytes );
     }
 
-    public function close() {
-        trace("CLOSE");
+    public inline function close() {
         socket.close();
     }
 }
 
-#end
+// #end
