@@ -1,10 +1,14 @@
 {
 	"name": "wtri",
-	"url": "https://github.com/tong/wtri",
-	"license": "Public",
-	"tags": ["net","server","socket","webserver","http","websocket","web","dev","sys"],
-	"description": "Development web server with abstract base",
-	"version": "0.1.1",
+	"description": "Embeddable development web server",
+	"version": "1.0.0",
 	"releasenote": "See CHANGES",
+	"url": "https://github.com/tong/wtri",
+	"tags": ["net","server","socket","webserver","http","websocket","web","dev","sys"],
+	"license": "Public",
+	"classPath": "src/",
+	"dependencies": {
+		"om.http": ""
+	},
 	"contributors": ["tong"]
 }

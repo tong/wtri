@@ -1,17 +1,14 @@
-
--cp src
--lib hxargs
--main wtri.WebServer
--resource res/index.html@index
--resource res/error.html@error
+# -cpp out
+# -neko wtri.n
+-hl wtri.hl
+# -hl out/main.c
+# --interp
+-main Main
+-lib wtri
 -dce full
+-D analyzer-optimize
+# -D no-traces
+# -D wtri_uv
+-debug
 #--no-traces
---each
-
---next
--neko wtri.n
-
---next
--cpp build
-#-D HXCPP_M64
--cmd mv build/WebServer ./wtri
+#-cmd cc -O3 -o wtri -std=c11 -I out out/main.c -lhl -luv /usr/local/lib/fmt.hdll /usr/local/lib/uv.hdll

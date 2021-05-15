@@ -1,4 +1,6 @@
-*.sublime-*
+out/
 _*
 *.n
+*.hl
+*.hdll
 TODO
