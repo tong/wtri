@@ -1,17 +1,15 @@
 package wtri;
-/* 
-#if hl
-typedef Stream = hl.uv.Stream;
 
-#elseif sys */
+interface Stream {
+    function write( bytes : Bytes ) : Void;
+    function close() : Void;
+}
 
-import sys.net.Socket;
+class SocketStream implements Stream {
 
-class Stream {
+    public var socket(default,null) : sys.net.Socket;
 
-    public final socket : Socket;
-
-    public inline function new( socket : Socket ) {
+    public inline function new( socket : sys.net.Socket ) {
         this.socket = socket;
     }
 
@@ -23,5 +21,19 @@ class Stream {
         socket.close();
     }
 }
+class UVStream implements Stream {
 
-// #end
+    public var stream(default,null) : hl.uv.Stream;
+
+    public inline function new( stream : hl.uv.Stream ) {
+        this.stream = stream;
+    }
+
+    public inline function write( bytes : Bytes ) {
+        stream.write( bytes );
+    }
+
+    public inline function close() {
+        stream.close();
+    }
+}

@@ -1,5 +1,5 @@
 
-function main() {
+private function main() {
 
     var host = "localhost";
 	var port = 8080;
@@ -78,10 +78,10 @@ function main() {
                 //res.end( content );
             }
         }
-        log( '${req.host} - ${req.method} ${req.path} - ${res.statusCode}' );
+        log( '${req.stream} - ${req.method} /${req.path} - ${res.statusCode}' );
     });
     println('Starting server $host:$port ← $root' );
-    server.listen( port, host, false );
+    server.listen( port, host, true );
 }
 
 function log( msg : String ) {

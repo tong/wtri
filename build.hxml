@@ -1,4 +1,6 @@
- -hl wtri.hl
+#-neko wtri.n
+-hl wtri.hl
+#-cpp out
 #-hl out/main.c
 -main Main
 -lib wtri
@@ -7,4 +9,4 @@
 -D analyzer-optimize
 # -D no-traces
 # -D wtri_uv
--debug
+#-debug
