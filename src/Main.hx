@@ -1,16 +1,39 @@
 
-import haxe.Json;
-
 function main() {
 
     var host = "localhost";
 	var port = 8080;
-	var root = '/home/tong/dev/web/laerm/web';
+	var root : String = null;
     
+    var usage : String = null;
+    var argHandler = hxargs.Args.generate([
+        @doc("IP address to bind")
+        ["-host"] => (name:String) -> {
+            host = name;
+        },
+        @doc("Port number")
+        ["-port"] => (number:Int) -> {
+            if( number < 1 ) exit( 'Invalid port number' );
+            if( number > 65535 ) exit( 'Invalid port number' );
+            port = number;
+        },
+        @doc("Root path")
+        ["-root"] => (path:String) -> {
+            if( !FileSystem.exists( path ) ) exit( 'Root path not found' );
+            if( !FileSystem.isDirectory( path ) ) exit( 'Rooth path is a file' );
+            root = path;
+        },
+        @doc("Print this help")
+        ["--help"] => () -> {
+            exit( 0, usage );
+        },
+        _ => (arg:String) -> exit( 1, 'Unknown argument' )
+    ]);
+    usage = argHandler.getDoc();
     var args = Sys.args();
-    if( args[0] != null ) host = args[0];
-    if( args[1] != null ) port = Std.parseInt( args[1] );
-    if( args[2] != null ) root = args[2];
+    argHandler.parse(args);
+
+    if( root == null ) root = Sys.getCwd();
 
     var mime = [
         "html" => TextHtml,
@@ -68,6 +91,10 @@ function main() {
 }
 
 inline function log( msg : String ) {
-    // Sys.println("["+Time.now()+"] "+msg);
     Sys.println( '[${Time.now()}] $msg' );
+}
+
+inline function exit( code = 0, ?msg : String ) {
+    if( msg != null ) Sys.println( msg );
+    Sys.exit( code );
 }

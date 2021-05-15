@@ -1,10 +1,8 @@
-# -cpp out
-# -neko wtri.n
--hl wtri.hl
-# -hl out/main.c
-# --interp
+ -hl wtri.hl
+#-hl out/main.c
 -main Main
 -lib wtri
+-lib hxargs
 -dce full
 -D analyzer-optimize
 # -D no-traces
