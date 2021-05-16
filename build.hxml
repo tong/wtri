@@ -1,12 +1,13 @@
-#-neko wtri.n
 -hl wtri.hl
-#-cpp out
 #-hl out/main.c
+#-cpp out
+#-neko wtri.n
+#-python wtri.py
+#--jvm wtri.jar
+#-php php
+#-lua wtri.lua
 -main Main
 -lib wtri
 -lib hxargs
 -dce full
 -D analyzer-optimize
-# -D no-traces
-# -D wtri_uv
-#-debug

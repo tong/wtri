@@ -6,7 +6,7 @@ class Server {
     static var EXPR_HTTP_HEADER = ~/([a-zA-Z-]+): (.+)/;
 
     public var handler : Request->Response->Void;
-
+    
     public var name = "wtri";
     //public var cors : String; // = "*";
 
@@ -28,8 +28,7 @@ class Server {
                         stream.close();
                         return;
                     }
-                    var i = new BytesInput( bytes );
-                    processRequest( new wtri.Stream.UVStream( stream ), i );
+                    processRequest( new wtri.Stream.UVStream( stream ), new BytesInput( bytes ) );
                 });
             });
             return;

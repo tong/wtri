@@ -21,6 +21,9 @@ class SocketStream implements Stream {
         socket.close();
     }
 }
+
+#if hl
+
 class UVStream implements Stream {
 
     public var stream(default,null) : hl.uv.Stream;
@@ -37,3 +40,5 @@ class UVStream implements Stream {
         stream.close();
     }
 }
+
+#end

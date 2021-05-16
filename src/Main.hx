@@ -5,7 +5,10 @@ private function main() {
 	var port = 8080;
 	var root : String = null;
 
-    var autoindex = true;
+    var useUV = false;
+    //var maxConnections = 0;
+    //var autoindex = true;
+
     var mime = [
         "html" => TextHtml,
         "js" => TextJavascript,
@@ -17,7 +20,7 @@ private function main() {
     
     var usage : String = null;
     var argHandler = hxargs.Args.generate([
-        @doc("IP address to bind")["-host"] => (name:String) -> host = name,
+        @doc("Address to bind")["-host"] => (name:String) -> host = name,
         @doc("Port number")["-port"] => (number:Int) -> {
             if( number < 1 || number > 65535 ) exit( 'Invalid port number' );
             port = number;
@@ -27,9 +30,9 @@ private function main() {
                 exit( 'Root path not found' );
             root = path;
         },
-        /* @doc("Use libuv with num connections")["-uv"] => (connections:Int) -> {
-            //TODO
-        }, */
+        #if hl
+        @doc("Use libuv")["--uv"] => () -> useUV = true,
+        #end
         @doc("Print this help")["--help"] => () -> exit( usage ),
         _ => arg -> exit( 1, 'Unknown argument\n\n$usage' )
     ]);
@@ -38,12 +41,15 @@ private function main() {
 
     if( root == null ) root = Sys.getCwd();
 
+    startServer( host, port, root, mime, useUV );
+}
+
+function startServer( host : String, port : Int, root : String, mime : Map<String,String>, useUV : Bool ) {
     var server = new wtri.Server( (req,res) -> {
         var path = '$root/'+req.path;
         if( !FileSystem.exists( path )) {
             res.writeHead( NOT_FOUND );
             res.end();
-            //log( '${req.host} - ${req.method} ${req.path} ${res.statusCode}' );
         } else {
             if( FileSystem.isDirectory( path ) ) {
                 var ipath = '$path/index.html';
@@ -66,22 +72,13 @@ private function main() {
                     'Content-length' => Std.string( stat.size )
                 ] );
                 res.writeInput( File.read( path ) );
-                //var content = File.getBytes( path );
                 res.end();
-
-                /* var fi = File.read( path );
-                var pos = 0;
-                //res.wre( fi );
-                res.write( File.getBytes( path ) );
-                res.end(); */
-
-                //res.end( content );
             }
         }
         log( '${req.stream} - ${req.method} /${req.path} - ${res.statusCode}' );
     });
-    println('Starting server $host:$port ← $root' );
-    server.listen( port, host, true );
+    println('Starting server http://$host:$port → $root' );
+    server.listen( port, host, useUV );
 }
 
 function log( msg : String ) {

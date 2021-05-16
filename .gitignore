@@ -1,4 +1,6 @@
+cpp/
 out/
+php/
 _*
 *.n
 *.hl
