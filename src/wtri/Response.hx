@@ -6,9 +6,10 @@ class Response {
 
     public var statusCode : StatusCode = OK;
     public var headers : Map<String,String>;
-    //public var writableEnded(default,null) = false;
+
     public var headersSent(default,null) = false;
     public var finished(default,null) = false;
+    //public var writableEnded(default,null) = false;
 
     public function new( stream : wtri.Stream, ?headers : Map<String,String> ) {
         this.stream = stream;
@@ -36,22 +37,6 @@ class Response {
     
     public function writeInput( i : haxe.io.Input ) {
         write( i.readAll() );
-        /*
-        var pos = 0;
-        var bufsize = 128;
-        var len = 128;
-        while( true ) {
-            trace("IO");
-            try {
-                var len = i.read( bufsize );
-                trace(len);
-                stream.write( i.read( bufsize ) );
-            } catch(e:haxe.io.Eof) {
-                trace(e);
-                break;
-            }
-        }
-        */
         return this;
     } 
 
