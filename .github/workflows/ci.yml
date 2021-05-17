@@ -18,6 +18,7 @@ jobs:
           haxe-version: 4.2.2
       - name: Setup
         run: |
+          haxelib dev wtri .
           haxelib install hxargs
           haxelib git om.core https://github.com/omlib/om.core
           haxelib git om.http https://github.com/omlib/om.http
