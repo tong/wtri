@@ -1,4 +1,4 @@
--hl wtri.hl
+# -hl wtri.hl
 #-hl out/main.c
 #-cpp out
 #-neko wtri.n
@@ -11,3 +11,4 @@
 -lib hxargs
 -dce full
 -D analyzer-optimize
+# --debug
