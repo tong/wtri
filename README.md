@@ -1,7 +1,18 @@
 WTRI
 ====
-Haxe/sys web server.
+Haxe/sys web server (+library).
 
+
+## Library
+
+```hx
+var server = new wtri.Server( (req,res) -> {
+    res.writeHead( OK ).end( 'Hello!' );
+}).listen( port, host, uv );
+```
+
+
+## Usage
 
 ```sh
 Usage: wtri [options]
