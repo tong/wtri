@@ -1,4 +1,3 @@
-import wtri.handler.WebSocketHandler;
 
 var server : wtri.Server;
 
