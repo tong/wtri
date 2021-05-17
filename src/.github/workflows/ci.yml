@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup
+        uses: krdlab/setup-haxe@v1
+        with:
+          haxe-version: 4.2.2
+      - name: Setup
+        run: |
+          haxelib install hxargs
+          haxelib git om.http https://github.com/omlib/om.http
+      - name: Build
+        run: |
+          haxe build.hxml -hl wtri.hl
