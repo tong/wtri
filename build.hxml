@@ -9,6 +9,8 @@
 -main Main
 -lib wtri
 -lib hxargs
+-lib om.core
+-lib om.http
 -dce full
 -D analyzer-optimize
 # --debug
