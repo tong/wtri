@@ -19,6 +19,7 @@ jobs:
       - name: Setup
         run: |
           haxelib install hxargs
+          haxelib git om.core https://github.com/omlib/om.core
           haxelib git om.http https://github.com/omlib/om.http
       - name: Build
         run: |
