@@ -5,23 +5,21 @@ class Server {
     static var EXPR_HTTP = ~/(GET|POST|HEAD) \/(.*) (HTTP\/1\.(0|1))/;
     static var EXPR_HTTP_HEADER = ~/([a-zA-Z-]+): (.+)/;
 
-    public var handler : Request->Response->Void;
-    
     public var name = "wtri";
+    public var handler : Request->Response->Void;
     //public var cors : String; // = "*";
 
     public function new( handler : Request->Response->Void ) {
         this.handler = handler;
     }
     
-    public function listen( port : Int, host = 'localhost', uv = true, maxConnections = 200 ) {
+    public function listen( port : Int, host = 'localhost', uv = false, maxConnections = 20 ) {
         #if hl
         if( uv ) {
             var loop = hl.uv.Loop.getDefault();
             var tcp = new hl.uv.Tcp( loop );
             tcp.bind( new sys.net.Host(host), port );
             tcp.listen( maxConnections, () -> {
-                trace( "Client connected" );
                 var stream = tcp.accept();
                 stream.readStart( bytes -> {
                     if( bytes == null ) {
@@ -48,7 +46,7 @@ class Server {
     function processRequest( stream : Dynamic, i : haxe.io.Input ) {
         var line : String = i.readLine();
         if( !EXPR_HTTP.match( line ) ) {
-            trace( 'Invalid http: $line' );
+            println( 'Invalid http: $line' );
             stream.close();
             return;
         }
@@ -81,7 +79,9 @@ class Server {
                 return;
                 //return throw new HTTPError( HTTPStatusCode.BAD_REQUEST );
             }
-            req.headers.set( EXPR_HTTP_HEADER.matched(1), EXPR_HTTP_HEADER.matched(2) );
+            var key = EXPR_HTTP_HEADER.matched(1);
+            var val = EXPR_HTTP_HEADER.matched(2);
+            req.headers.set( key, val );
         }
         var res = new Response( stream );
         res.headers.set( 'Server', 'wtri' );
@@ -91,6 +91,17 @@ class Server {
             res.headers.set( 'Access-Control-Allow-Origin', cors );
         } */
         handler( req, res );
+        log( '${req.stream} - ${req.method} /${req.path} - ${res.statusCode}' );
+    }
+
+    public static function log( obj : Dynamic, time = true ) {
+        var str = "";
+        if( time ) {
+            //str += DateTools.format( Date.now(), '%d/%b/%Y|%H:%M:%S' );
+            str += DateTools.format( Date.now(), '%H:%M:%S - ' );
+        }
+		str += '$obj';
+        println( str );
     }
 
 }

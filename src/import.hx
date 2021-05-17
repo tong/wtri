@@ -17,4 +17,5 @@ import sys.io.File;
 import hl.uv.Stream;
 #end
 
+using StringTools;
 using haxe.io.Path;
