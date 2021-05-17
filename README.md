@@ -2,6 +2,7 @@ WTRI
 ====
 Haxe/sys web server (+library).
 
+[![CI](https://github.com/tong/wtri/actions/workflows/ci.yml/badge.svg)](https://github.com/tong/wtri/actions/workflows/ci.yml)
 
 ## Library
 
