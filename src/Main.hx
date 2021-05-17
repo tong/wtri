@@ -1,3 +1,6 @@
+import wtri.handler.WebSocketHandler;
+
+var server : wtri.Server;
 
 private function main() {
 
@@ -31,15 +34,15 @@ private function main() {
     if( root == null ) root = Sys.getCwd();
 
     var handlers : Array<wtri.Handler> = [
-        new wtri.handler.FileSystemHandler( root )
+        new wtri.handler.FileSystemHandler( root ),
     ];
 
-    startServer( host, port, uv, handlers );
+    Main.server = startServer( host, port, uv, handlers );
 }
 
 function startServer( host : String, port : Int, uv = true, handlers : Array<wtri.Handler> ) {
     println('Starting server http://$host:$port' );
-    var server = new wtri.Server( (req,res) -> {
+    return new wtri.Server( (req,res) -> {
         var handledBy : wtri.Handler = null;
         for( h in handlers ) {
             if( h.handle( req, res ) ) {
@@ -51,8 +54,7 @@ function startServer( host : String, port : Int, uv = true, handlers : Array<wtr
             res.writeHead( NOT_FOUND ).end();
         }
         //log( '${req.stream} - ${req.method} /${req.path} - ${res.statusCode}' );
-    });
-    server.listen( port, host, uv );
+    }).listen( port, host, uv );
 }
 
 function exit( code = 0, ?msg : String ) {

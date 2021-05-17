@@ -40,6 +40,7 @@ class FileSystemHandler implements wtri.Handler {
             'Content-length' => Std.string( content.length )
         ] );
         res.end( Bytes.ofString( content ) );
+        res.stream.close();
         return true;
     }
 

@@ -6,15 +6,17 @@ class Request {
 
     public final method : String;
     public final path : String;
+    public final params : Map<String,String>;
     public final protocol : String;
     public final headers = new Map<String,String>();
 
     //public maxHeadersCount = 2000;
 
-    public function new( stream : wtri.Stream, method : Method, path : String, protocol : String ) {
+    public function new( stream : wtri.Stream, method : Method, path : String, params : Map<String,String>, protocol : String ) {
         this.stream = stream;
         this.method = method;
         this.path = path;
+        this.params = params;
         this.protocol = protocol;
     }
 }

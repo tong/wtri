@@ -17,6 +17,7 @@ class Response {
     }
     
     public function writeHead( statusCode : StatusCode, ?statusMessage : String, ?headers : Map<String,String> ) : Response {
+        this.statusCode = statusCode;
         var str = 'HTTP/1.1 ${statusCode}';
         if( statusMessage != null ) str += ' ${statusMessage}';
         else str += ' '+StatusMessage.fromStatusCode( statusCode );
@@ -32,7 +33,7 @@ class Response {
 
     public function write( bytes : Bytes ) {
         stream.write( bytes );
-        return this;return this;
+        return this;
     }
     
     public function writeInput( i : haxe.io.Input ) {
@@ -51,7 +52,7 @@ class Response {
         if( data != null )
             stream.write( data );
         finished = true;
-        stream.close();
+        //stream.close();
         return this;
     }
 }

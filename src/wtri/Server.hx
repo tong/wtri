@@ -13,7 +13,7 @@ class Server {
         this.handler = handler;
     }
     
-    public function listen( port : Int, host = 'localhost', uv = false, maxConnections = 20 ) {
+    public function listen( port : Int, host = 'localhost', uv = false, maxConnections = 20 ) : Server {
         #if hl
         if( uv ) {
             var loop = hl.uv.Loop.getDefault();
@@ -29,7 +29,7 @@ class Server {
                     processRequest( new wtri.Stream.UVStream( stream ), new BytesInput( bytes ) );
                 });
             });
-            return;
+            return this;
         }
         #end
         var server = new sys.net.Socket();
@@ -41,6 +41,7 @@ class Server {
             //trace( "Socket connected "+peer.host );
             processRequest( new wtri.Stream.SocketStream( socket ), socket.input );
         }
+        return this;
     }
 
     function processRequest( stream : Dynamic, i : haxe.io.Input ) {
@@ -65,7 +66,7 @@ class Server {
         }
         //trace(path,params);
         //var url = om.URL.parse(path);
-        var req = new Request( stream, method, path, protocol );
+        var req = new Request( stream, method, path, params, protocol );
         var data : String = null;
         while( true ) {
             line = i.readLine();
