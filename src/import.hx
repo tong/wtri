@@ -3,19 +3,18 @@ import haxe.io.Bytes;
 import haxe.io.BytesInput;
 import haxe.io.Mime;
 
-import om.Time;
-import om.http.Method;
-import om.http.StatusCode;
-import om.http.StatusMessage;
+#if hl
+import hl.uv.Stream;
+#end
 
 import Sys.print;
 import Sys.println;
 import sys.FileSystem;
 import sys.io.File;
 
-#if hl
-import hl.uv.Stream;
-#end
+import wtri.http.Method;
+import wtri.http.StatusCode;
+import wtri.http.StatusMessage;
 
 using StringTools;
 using haxe.io.Path;

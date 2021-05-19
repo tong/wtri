@@ -36,14 +36,13 @@ class Server {
         server.listen( maxConnections );
         while( true ) {
             var socket : sys.net.Socket = server.accept();
-            //var peer = socket.peer();
             //trace( "Socket connected "+peer.host );
             processRequest( new wtri.Stream.SocketStream( socket ), socket.input );
         }
         return this;
     }
 
-    function processRequest( stream : Dynamic, i : haxe.io.Input ) {
+    function processRequest( stream : wtri.Stream, i : haxe.io.Input ) {
         var line = i.readLine();
         if( !EXPR_HTTP.match( line ) ) {
             println( 'Invalid http: $line' );
@@ -88,7 +87,7 @@ class Server {
         res.headers.set( 'Server', 'wtri' );
         res.headers.set( 'Date', Date.now().toString() );
         handler( req, res );
-        log( '${req.stream} - ${req.method} /${req.path} - ${res.statusCode}' );
+        log( '${req.stream.ip} - ${req.method} /${req.path} - ${res.statusCode}' );
     }
 
     public static function log( obj : Dynamic, time = true ) {
