@@ -7,10 +7,12 @@ Haxe/sys web server (+library).
 ## Library
 
 ```hx
-var server = new wtri.Server( (req,res) -> {
+new wtri.Server( (req,res) -> {
     res.writeHead( OK ).end( 'Hello!' );
-}).listen( port, host, uv );
+}).listen( 8080 );
 ```
+
+See: [Main.hx](src/Main.hx)
 
 
 ## Usage
