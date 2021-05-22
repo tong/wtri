@@ -14,6 +14,7 @@ class FileSystemHandler implements wtri.Handler {
             "css" => TextCss,
             "html" => TextHtml,
             "gif" => ImageGif,
+            "ico" => "image/x-icon",
             'jpg' => ImageJpeg,
             "js" => TextJavascript,
             "json" => ApplicationJson,
@@ -27,20 +28,19 @@ class FileSystemHandler implements wtri.Handler {
     }
 
     public function handle( req : Request, res : Response ) : Bool {
-        var _path = '$path/'+req.path;
+        final _path = '$path/'+req.path;
         //TODO check path security
         //trace(req.path);
-        var filePath = findFile( _path );
+        final filePath = findFile( _path );
         if( filePath == null )
             return false;
-        var content = File.getContent( filePath );
-        var contentType = getFileContentType( filePath );
-        res.writeHead( OK, [
-            'Content-type' => contentType,
-            'Content-length' => Std.string( content.length )
+        final stat = FileSystem.stat( filePath );
+        res.writeHead( [
+            'Content-type' => getFileContentType( filePath ),
+            'Content-length' => Std.string( stat.size )
         ] );
-        res.end( Bytes.ofString( content ) );
-        res.stream.close();
+        res.writeInput( File.read( filePath ), stat.size );
+        res.end();
         return true;
     }
 
@@ -53,7 +53,7 @@ class FileSystemHandler implements wtri.Handler {
 	}
 
     function findIndexFile( path : String ) : String {
-		var r = new EReg( '(${indexFileNames.join("|")}).(${indexFileTypes.join("|")})$', '' );
+		final r = new EReg( '(${indexFileNames.join("|")}).(${indexFileTypes.join("|")})$', '' );
 		for( f in FileSystem.readDirectory( path ) )
 			if( r.match( f ) )
 				return path +'/'+ r.matched(1) + '.' + r.matched(2);
@@ -61,7 +61,7 @@ class FileSystemHandler implements wtri.Handler {
 	}
 
     function getFileContentType( path : String ) : String {
-		var x = path.extension();
+		final x = path.extension();
 		return mime.exists(x) ? mime.get(x) : 'unknown/unknown';
 	}
 

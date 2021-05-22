@@ -2,6 +2,7 @@ cpp/
 out/
 php/
 _*
+*.js
 *.n
 *.hl
 *.hdll

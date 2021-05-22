@@ -34,23 +34,23 @@ class SocketStream implements Stream {
 
 class UVStream implements Stream {
 
-    public var stream(default,null) : hl.uv.Stream;
+    public var socket(default,null) : hl.uv.Stream;
 
     public final ip : String;
     public final port : Int;
 
-    public inline function new( stream : hl.uv.Stream ) {
-        this.stream = stream;
+    public inline function new( socket : hl.uv.Stream ) {
+        this.socket = socket;
         ip = 'TODO'; //TODO
         port = 1234; //TODO
     }
 
     public inline function write( bytes : Bytes ) {
-        stream.write( bytes );
+        socket.write( bytes );
     }
 
     public inline function close() {
-        stream.close();
+        socket.close();
     }
 }
 
