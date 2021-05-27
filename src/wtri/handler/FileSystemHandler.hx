@@ -19,6 +19,7 @@ class FileSystemHandler implements wtri.Handler {
             "js" => TextJavascript,
             "json" => ApplicationJson,
             'png' => ImagePng,
+            'svg' => "image/svg+xml",
             'txt' => TextPlain,
             'xml' => ApplicationXml,
             "webp" => ImageWebp,
@@ -28,7 +29,7 @@ class FileSystemHandler implements wtri.Handler {
     }
 
     public function handle( req : Request, res : Response ) : Bool {
-        final _path = '$path/'+req.path;
+        final _path = '${path}${req.path}'.normalize();
         //TODO check path security
         //trace(req.path);
         final filePath = findFile( _path );

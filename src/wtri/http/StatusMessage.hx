@@ -67,6 +67,16 @@ enum abstract StatusMessage(String) from String to String {
         case StatusCode.PROCESSING: StatusMessage.PROCESSING;
         case StatusCode.EARLY_HINTS: StatusMessage.EARLY_HINTS;
 
+        case StatusCode.MULTIPLE_CHOICE: StatusMessage.MULTIPLE_CHOICE;
+        case StatusCode.MOVED_PERMANENTLY: StatusMessage.MOVED_PERMANENTLY;
+        case StatusCode.FOUND: StatusMessage.FOUND;
+        case StatusCode.SEE_OTHER: StatusMessage.SEE_OTHER;
+        case StatusCode.NOT_MODIFIED: StatusMessage.NOT_MODIFIED;
+        case StatusCode.USE_PROXY: StatusMessage.USE_PROXY;
+        case StatusCode.SWITCH_PROXY: StatusMessage.SWITCH_PROXY;
+        case StatusCode.TEMPORARY_REDIRECT: StatusMessage.TEMPORARY_REDIRECT;
+        case StatusCode.PERMANENT_REDIRECT: StatusMessage.TEMPORARY_REDIRECT;
+
         case StatusCode.OK: StatusMessage.OK;
         case StatusCode.CREATED: StatusMessage.CREATED;
         case StatusCode.ACCEPTED: StatusMessage.ACCEPTED;

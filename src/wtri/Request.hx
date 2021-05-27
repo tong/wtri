@@ -1,19 +1,19 @@
 package wtri;
 
+import wtri.http.HeaderName;
 class Request {
 
-    static var EXPR_HTTP = ~/(GET|POST|PUT|HEAD) \/(.*) (HTTP\/1\.(0|1))/;
-    static var EXPR_HTTP_HEADER = ~/([a-zA-Z-]+): (.+)/;
+    static var EXPR_HTTP = ~/^(GET|POST|PUT|HEAD) (.*) (HTTP\/1\.(0|1))$/;
+    static var EXPR_HTTP_HEADER = ~/^([a-zA-Z-]+) *: *(.+)$/;
 
     public final socket : Socket;
 
     public final method : Method;
     public final path : String;
-    public final params : Map<String,String>;
     public final protocol : String;
-    public final headers = new Map<String,String>();
-
-    public var data : Bytes;
+    public final params : Map<String,String>;
+    public final headers = new Map<HeaderName,String>();
+    public final data : Bytes;
 
     public function new( socket : Socket ) {
         this.socket = socket;
@@ -37,22 +37,18 @@ class Request {
         while( true ) {
             if( (line = i.readLine()).length == 0 )
                 break;
-            if( !EXPR_HTTP_HEADER.match( line ) ) {
-                //TODO
-                trace("LINE NOT NMATCHED ",line);
+            if( !EXPR_HTTP_HEADER.match( line ) )
                 return throw new Error( BAD_REQUEST );
-                //return throw new HTTPError( HTTPStatusCode.BAD_REQUEST );
-            }
             final key = EXPR_HTTP_HEADER.matched(1);
             final val = EXPR_HTTP_HEADER.matched(2);
             headers.set( key, val );
         }
         switch method {
         case POST, PUT:
-            final _len = headers.get( "Content-Length" );
+            final _len = headers.get( Content_Length );
             if( _len == null )
                 return throw new Error( BAD_REQUEST );
-            final len = Std.parseInt( headers.get( "Content-Length" ) );
+            final len = Std.parseInt( headers.get( Content_Length ) );
             i.readBytes( data = Bytes.alloc( len ), 0, len );
         case _:
         }
@@ -61,6 +57,8 @@ class Request {
     public function createResponse() : Response {
         final res = new Response( socket );
         //res.req = this;
+        if( headers.exists( Connection) )
+            res.headers.set( Connection, 'close' );
         return res;
     }
 }

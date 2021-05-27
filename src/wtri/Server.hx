@@ -2,10 +2,8 @@ package wtri;
 
 class Server {
 
-    public var name = "wtri";
+    public var listening(default,null) = false;
     public var handle : Request->Response->Void;
-    
-    var listening : Bool;
 
     public function new( handle : Request->Response->Void ) {
         this.handle = handle;
@@ -32,12 +30,18 @@ class Server {
         server.bind( new sys.net.Host( host ), port );
         server.listen( maxConnections );
         listening = true;
-        while( listening )
-            process( server.accept() );
+        while( listening ) {
+            try {
+                process( server.accept() );
+            } catch(e) {
+                trace(e);
+            }
+        }
+        server.close();
         return this;
     }
 
-    public function stop() {
+    public function stop() : Server {
         listening = false;
         return this;
     }
@@ -47,25 +51,5 @@ class Server {
         final res = req.createResponse();
         handle( req, res );
         socket.close();
-        /*
-        var req : Request = null;
-        try {
-            req = Request.read( socket.input );
-        } catch(e:Error) {
-            trace(e);
-            socket.close();
-            return;
-        }
-        final res = new Response( socket.output );
-        //res.headers.set( 'Server', 'wtri' );
-        //res.headers.set( 'Date', Date.now().toString() );
-        try {
-            handle( req, res );
-        } catch(e:Dynamic) {
-            trace(e);
-            socket.close();
-            return;
-        }
-        */
     }
 }
