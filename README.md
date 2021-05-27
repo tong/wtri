@@ -12,11 +12,9 @@ git clone https://github.com/tong/wtri.git
 cd wtri/
 haxelib dev wtri .
 
-haxe build.hxml -hl wtri.hl # Hashlink VM
-make # Hashlink C
-
-haxe build.hxml -neko wtri.n # Neko
-haxe build.hxml -python wtri.py # Python
+haxe build.hxml -neko wtri.n # NekoVM
+haxe build.hxml -hl wtri.hl # HashlinkVM
+make # HashlinkC
 ```
 
 ## Run
@@ -40,7 +38,7 @@ haxe -lib wtri --run Main
 ```hx
 new wtri.Server( (req,res) -> {
     Sys.println( req.path );
-    res.end( Bytes.ofString('Hello!') );
+    res.end( 'Hello!' );
 }).listen( 8080 );
 ```
 See: [Main.hx](src/Main.hx)

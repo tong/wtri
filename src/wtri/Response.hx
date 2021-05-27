@@ -38,8 +38,8 @@ class Response {
         return this;
     } 
 
-    public function write( bytes : Bytes ) : Response {
-        socket.output.write( bytes );
+    public function write( data : Data ) : Response {
+        socket.output.write( data );
         return this;
     }
 
@@ -49,7 +49,7 @@ class Response {
         end();
     }
 
-    public function end( ?code : StatusCode = OK, ?data : Bytes ) : Response {
+    public function end( ?code : StatusCode = OK, ?data : Data ) : Response {
         if( code != null ) this.code = code;
         if( !headersSent ) {
             var headers = new Map<String,String>();

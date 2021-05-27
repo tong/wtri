@@ -13,7 +13,7 @@ class Request {
     public final protocol : String;
     public final params : Map<String,String>;
     public final headers = new Map<HeaderName,String>();
-    public final data : Bytes;
+    public final data : Data;
 
     public function new( socket : Socket ) {
         this.socket = socket;
