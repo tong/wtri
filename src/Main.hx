@@ -7,13 +7,14 @@ private function main() {
 	var port = 8080;
 	var root : String = null;
 
+    var noLog = false;
     var uv = true;
     var maxConnections = 100;
 
     var usage : String = null;
     var argHandler = hxargs.Args.generate([
         @doc("Address to bind")["-host"] => (name:String) -> host = name,
-        @doc("Port number to bind")["-port"] => (number:Int) -> {
+        @doc("Port to bind")["-port"] => (number:Int) -> {
             if( number < 1 || number > 65535 )
                 exit( 'Invalid port number' );
             port = number;
@@ -24,8 +25,9 @@ private function main() {
             root = path;
         },
         //#if hl @doc("Use libuv")["--uv"] => () -> uv = true, #end
+        @doc("Disable logging to stdout")["--no-log"] => () -> noLog = true,
         @doc("Print this help")["--help"] => () -> exit( usage ),
-        _ => arg -> exit( 1, 'Unknown argument\n\n$usage' )
+        _ => arg -> exit( 1, 'Unknown argument [$arg]\n\n$usage' )
     ]);
     usage = 'Usage: wtri [options]\n\n'+argHandler.getDoc();
     argHandler.parse( Sys.args() );
@@ -55,8 +57,10 @@ private function main() {
                 res.end( NOT_FOUND );
             }
         }
-        var peer = req.socket.peer();
-        log( '${peer.host} - ${req.method} ${req.path} - ${res.code}' );
+        if( !noLog ) {
+            var peer = req.socket.peer();
+            log( '${peer.host} - ${req.method} ${req.path} - ${res.code}' );
+        }
     }).listen( port, host, uv, maxConnections );
 }
 

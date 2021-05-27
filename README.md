@@ -1,6 +1,6 @@
 WTRI
 ====
-Embeddable haxe/sys web server (+library).
+Embeddable haxe/sys web server.
 
 [![CI](https://github.com/tong/wtri/actions/workflows/ci.yml/badge.svg)](https://github.com/tong/wtri/actions/workflows/ci.yml)
 
@@ -11,18 +11,28 @@ Embeddable haxe/sys web server (+library).
 git clone https://github.com/tong/wtri.git
 cd wtri/
 haxelib dev wtri .
-haxe build-hl.hxml
+
+haxe build.hxml -hl wtri.hl # Hashlink VM
+make # Hashlink C
+
+haxe build.hxml -neko wtri.n # Neko
+haxe build.hxml -python wtri.py # Python
 ```
 
 ## Run
 
 ```sh
-Usage: hl wtri.hl [options]
+Usage: wtri [options]
 
 [-host] <name>   : Address to bind
-[-port] <number> : Port number
+[-port] <number> : Port number to bind
 [-path] <path>   : Filesystem root path
 [--help]         : Print this help
+```
+
+Run eval
+```sh
+haxe -lib wtri --run Main
 ```
 
 ## Embed
