@@ -1,4 +1,4 @@
-CFLAGS = -O3 -std=c11
+CFLAGS = -Os -std=c11 -msse2 -mfpmath=sse -m64 -fPIC -pthread -fno-omit-frame-pointer -D LIBHL_EXPORTS
 HDLL = /usr/local/lib/uv.hdll
 
 SRC = $(shell find src/ -type f -name '*.hx')
