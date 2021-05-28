@@ -5,7 +5,7 @@ enum abstract StatusMessage(String) from String to String {
     // --- 1xx: Information
     
     var CONTINUE = "Continue";
-    var SWITCHING_PROTOCOL = "Switching Protocol";
+    var SWITCHING_PROTOCOL = "Switching Protocols";
     var PROCESSING = "Processing (WebDAV)";
     var EARLY_HINTS = "Early Hints";
     

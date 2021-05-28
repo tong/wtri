@@ -13,7 +13,7 @@ class Request {
     public final path : String;
     public final protocol : String;
     public final params : Map<String,String>;
-    public final headers = new Map<HeaderName,String>();
+    public final headers = new wtri.http.Headers();
     public final data : Data;
 
     public function new( socket : Socket, input : haxe.io.Input ) {
@@ -57,7 +57,9 @@ class Request {
 
     public function createResponse() : Response {
         final res = new Response( socket );
-        if( headers.exists( Connection) ) res.headers.set( Connection, 'close' );
+        if( headers.get( Connection ) == 'keep-alive' ) {
+            res.headers.set( Connection, 'close' );
+        }
         return res;
     }
 }

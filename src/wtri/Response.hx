@@ -20,7 +20,7 @@ class Response {
         this.headers = (headers != null) ? headers : [];
     }
     
-    public function writeHead( ?code : StatusCode = OK, ?headers : Map<String,String> ) {
+    public function writeHead( ?code : StatusCode, ?headers : Map<String,String> ) {
         if( code != null ) this.code = code;
         writeLine( '${protocol} ${this.code} '+StatusMessage.fromStatusCode( this.code ) );
         if( headers != null ) for( k=>v in headers ) this.headers.set( k, v );
@@ -44,14 +44,14 @@ class Response {
         end();
     }
 
-    public function end( ?code : StatusCode = OK, ?data : Data ) {
+    public function end( ?code : StatusCode, ?data : Data ) {
         if( code != null ) this.code = code;
         if( !headersSent ) {
             var headers = new Map<String,String>();
             if( data != null ) {
                 headers.set( Content_Length, Std.string( data.length ) );
             }
-            writeHead( code, headers );
+            writeHead( this.code, headers );
         }
         if( data != null ) socket.write( data );
         finished = true;

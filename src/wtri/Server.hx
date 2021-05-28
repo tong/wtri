@@ -10,6 +10,7 @@ class Server {
     }
     
     public function listen( port : Int, host = 'localhost', uv = false, maxConnections = 100 ) : Server {
+        #if sys
         #if hl
         if( uv ) {
             var loop = hl.uv.Loop.getDefault();
@@ -20,7 +21,6 @@ class Server {
                 s.readStart( bytes -> {
                     var sock = new wtri.net.Socket.UVSocket(s);
                     inline process( sock, new BytesInput( bytes ) );
-                    sock.close();
                 });
             });
             return this;
@@ -35,6 +35,7 @@ class Server {
             inline process( new wtri.net.Socket.TCPSocket( sock ), sock.input  );
         }
         server.close();
+        #end
         return this;
     }
 
@@ -47,5 +48,8 @@ class Server {
         final req = new Request( socket, input );
         final res = req.createResponse();
         handle( req, res );
+        if( res.headers.get( Connection ) == 'close' ) {
+            socket.close();
+        }
     }
 }
