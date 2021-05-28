@@ -10,32 +10,29 @@ class Server {
     }
     
     public function listen( port : Int, host = 'localhost', uv = false, maxConnections = 100 ) : Server {
-      /*   #if hl
+        #if hl
         if( uv ) {
             var loop = hl.uv.Loop.getDefault();
             var tcp = new hl.uv.Tcp( loop );
             tcp.bind( new sys.net.Host(host), port );
             tcp.listen( maxConnections, () -> {
-                var stream = tcp.accept();
-                trace(stream);
-                stream.readStart( bytes -> {
-                    trace(bytes);
-                    process( new wtri.UVStream( stream ), new BytesInput( bytes ) );
+                var s = tcp.accept();
+                s.readStart( bytes -> {
+                    var sock = new wtri.net.Socket.UVSocket(s);
+                    inline process( sock, new BytesInput( bytes ) );
+                    sock.close();
                 });
             });
             return this;
         }
-        #end */
-        var server = new Socket();
+        #end
+        var server = new sys.net.Socket();
         server.bind( new sys.net.Host( host ), port );
         server.listen( maxConnections );
         listening = true;
         while( listening ) {
-            try {
-                process( server.accept() );
-            } catch(e) {
-                trace(e);
-            }
+            var sock = server.accept();
+            inline process( new wtri.net.Socket.TCPSocket( sock ), sock.input  );
         }
         server.close();
         return this;
@@ -46,10 +43,9 @@ class Server {
         return this;
     }
 
-    public function process( socket : Socket ) {
-        final req = new Request( socket );
+    public function process( socket : Socket, ?input : haxe.io.Input ) {
+        final req = new Request( socket, input );
         final res = req.createResponse();
         handle( req, res );
-        socket.close();
     }
 }

@@ -7,16 +7,14 @@ import haxe.io.Mime;
 import hl.uv.Stream;
 #end
 
-import Sys.print;
-import Sys.println;
 import sys.FileSystem;
-import sys.net.Socket;
 import sys.io.File;
 
 import wtri.http.Error;
 import wtri.http.Method;
 import wtri.http.StatusCode;
 import wtri.http.StatusMessage;
+import wtri.net.Socket;
 
 using StringTools;
 using haxe.io.Path;

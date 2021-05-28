@@ -19,7 +19,6 @@ class Response {
         this.socket = socket;
         this.protocol = protocol;
         this.headers = (headers != null) ? headers : [];
-        //this.headerr
     }
     
     public function writeHead( ?code : StatusCode = OK, ?headers : Map<String,String> ) : Response {
@@ -33,13 +32,13 @@ class Response {
         return this;
     }
     
-    public inline function writeInput( i : haxe.io.Input, len : Int ) {
-        socket.output.writeInput( i, len );
+   public inline function writeInput( input : haxe.io.Input, len : Int ) {
+        socket.writeInput( input, len );
         return this;
     } 
-
-    public function write( data : Data ) : Response {
-        socket.output.write( data );
+ 
+    public inline function write( data : Data ) : Response {
+        socket.write( data );
         return this;
     }
 
@@ -58,12 +57,13 @@ class Response {
             }
             writeHead( code, headers );
         }
-        if( data != null ) socket.output.write( data );
+        if( data != null ) socket.write( data );
         finished = true;
         return this;
     }
 
-    inline function writeLine( str : String )
-        socket.output.writeString( '$str\r\n' );
+    inline function writeLine( str : String ) {
+        socket.write( '$str\r\n' );
+    }
 
 }

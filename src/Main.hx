@@ -1,4 +1,5 @@
 
+var startTime = Sys.time();
 var server(default,null) : wtri.Server;
 
 private function main() {
@@ -7,8 +8,8 @@ private function main() {
 	var port = 8080;
 	var root : String = null;
 
-    var noLog = false;
-    var uv = true;
+    var quiet = false;
+    var uv = false;
     var maxConnections = 100;
 
     var usage : String = null;
@@ -24,8 +25,13 @@ private function main() {
                 exit( 'Root path not found' );
             root = path;
         },
-        //#if hl @doc("Use libuv")["--uv"] => () -> uv = true, #end
-        @doc("Disable logging to stdout")["--no-log"] => () -> noLog = true,
+        #if hl
+        @doc("Use libuv")["--uv"] => (connections:Int) -> {
+            maxConnections = connections;
+            uv = true;
+        },
+        #end
+        @doc("Disable logging to stdout")["--quiet"] => () -> quiet = true,
         @doc("Print this help")["--help"] => () -> exit( usage ),
         _ => arg -> exit( 1, 'Unknown argument [$arg]\n\n$usage' )
     ]);
@@ -39,12 +45,13 @@ private function main() {
     var handlers : Array<wtri.Handler> = [
         new wtri.handler.FileSystemHandler( root )
     ];
-    
-    println('Starting server http://$host:$port' );
+
+    Sys.println('Starting server http://$host:$port' );
     server = new wtri.Server( (req,res) -> {
         /* if( req.path == "/favicon.ico" ) {
             res.redirect('/favicon.svg');
         } */
+        //res.end( 'Hello!' );
         if( !res.finished ) {
             var handledBy : wtri.Handler = null;
             for( h in handlers ) {
@@ -57,20 +64,23 @@ private function main() {
                 res.end( NOT_FOUND );
             }
         }
-        if( !noLog ) {
-            var peer = req.socket.peer();
-            log( '${peer.host} - ${req.method} ${req.path} - ${res.code}' );
+        if( !quiet ) {
+            if( Std.isOfType( req.socket, TCPSocket ) ) {
+                var tcp : wtri.net.Socket.TCPSocket = cast req.socket;
+                var peer = tcp.socket.peer();
+                log( '${peer.host} - ${req.method} ${req.path} - ${res.code}' );
+            } else {
+                log( '${req.method} ${req.path} - ${res.code}' );
+            }
         }
     }).listen( port, host, uv, maxConnections );
 }
 
-function log( obj : Dynamic, time = true ) {
-    var str = "";
-    if( time ) str += DateTools.format( Date.now(), '%H:%M:%S - ' );
-    println( '$str$obj' );
+function log( str : String ) {
+    Sys.stdout().writeString( Std.int((Sys.time() - startTime) * 1000)  +' $str\n' );
 }
 
 function exit( code = 0, ?msg : String ) {
-    if( msg != null ) println( msg );
+    if( msg != null ) Sys.stdout().writeString( '$msg\n' );
     Sys.exit( code );
 }

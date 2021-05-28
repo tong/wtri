@@ -1,6 +1,7 @@
 package wtri;
 
 import wtri.http.HeaderName;
+
 class Request {
 
     static var EXPR_HTTP = ~/^(GET|POST|PUT|HEAD) (.*) (HTTP\/1\.(0|1))$/;
@@ -15,10 +16,9 @@ class Request {
     public final headers = new Map<HeaderName,String>();
     public final data : Data;
 
-    public function new( socket : Socket ) {
+    public function new( socket : Socket, input : haxe.io.Input ) {
         this.socket = socket;
-        final i = socket.input;
-        var line = i.readLine();
+        var line = input.readLine();
         if( !EXPR_HTTP.match( line ) )
             return throw new Error( BAD_REQUEST );
         method = EXPR_HTTP.matched(1);
@@ -35,7 +35,7 @@ class Request {
             }
         }
         while( true ) {
-            if( (line = i.readLine()).length == 0 )
+            if( (line = input.readLine()).length == 0 )
                 break;
             if( !EXPR_HTTP_HEADER.match( line ) )
                 return throw new Error( BAD_REQUEST );
@@ -49,7 +49,7 @@ class Request {
             if( _len == null )
                 return throw new Error( BAD_REQUEST );
             final len = Std.parseInt( headers.get( Content_Length ) );
-            i.readBytes( data = Bytes.alloc( len ), 0, len );
+            input.readBytes( data = Bytes.alloc( len ), 0, len );
         case _:
         }
     }
