@@ -11,7 +11,6 @@ class Response {
 
     public var code : StatusCode = OK;
     public var headers : wtri.http.Headers;
-
     public var headersSent(default,null) = false;
     public var finished(default,null) = false;
 
@@ -21,25 +20,22 @@ class Response {
         this.headers = (headers != null) ? headers : [];
     }
     
-    public function writeHead( ?code : StatusCode = OK, ?headers : Map<String,String> ) : Response {
+    public function writeHead( ?code : StatusCode = OK, ?headers : Map<String,String> ) {
         if( code != null ) this.code = code;
-        writeLine( '${protocol} ${code} '+StatusMessage.fromStatusCode( code ) );
+        writeLine( '${protocol} ${this.code} '+StatusMessage.fromStatusCode( this.code ) );
         if( headers != null ) for( k=>v in headers ) this.headers.set( k, v );
         for( k=>v in Response.defaultHeaders ) if( !this.headers.exists(k) ) this.headers.set( k, v );
         for( k=>v in this.headers ) writeLine( '$k: $v' );
         writeLine( '' );
         headersSent = true;
-        return this;
     }
     
-   public inline function writeInput( input : haxe.io.Input, len : Int ) {
+    public inline function writeInput( input : haxe.io.Input, len : Int ) {
         socket.writeInput( input, len );
-        return this;
     } 
  
-    public inline function write( data : Data ) : Response {
+    public inline function write( data : Data ) {
         socket.write( data );
-        return this;
     }
 
     public function redirect( path : String ) {
@@ -48,18 +44,17 @@ class Response {
         end();
     }
 
-    public function end( ?code : StatusCode = OK, ?data : Data ) : Response {
+    public function end( ?code : StatusCode = OK, ?data : Data ) {
         if( code != null ) this.code = code;
         if( !headersSent ) {
             var headers = new Map<String,String>();
             if( data != null ) {
-                headers.set('Content-length', Std.string( data.length ) );
+                headers.set( Content_Length, Std.string( data.length ) );
             }
             writeHead( code, headers );
         }
         if( data != null ) socket.write( data );
         finished = true;
-        return this;
     }
 
     inline function writeLine( str : String ) {

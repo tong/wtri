@@ -34,13 +34,14 @@ class Request {
                 params.set( a[0], a[1] );
             }
         }
+        var key : String, val : String;
         while( true ) {
             if( (line = input.readLine()).length == 0 )
                 break;
             if( !EXPR_HTTP_HEADER.match( line ) )
                 return throw new Error( BAD_REQUEST );
-            final key = EXPR_HTTP_HEADER.matched(1);
-            final val = EXPR_HTTP_HEADER.matched(2);
+            key = EXPR_HTTP_HEADER.matched(1);
+            val = EXPR_HTTP_HEADER.matched(2);
             headers.set( key, val );
         }
         switch method {
@@ -56,9 +57,7 @@ class Request {
 
     public function createResponse() : Response {
         final res = new Response( socket );
-        //res.req = this;
-        if( headers.exists( Connection) )
-            res.headers.set( Connection, 'close' );
+        if( headers.exists( Connection) ) res.headers.set( Connection, 'close' );
         return res;
     }
 }

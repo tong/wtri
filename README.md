@@ -22,10 +22,12 @@ make # HashlinkC
 ```sh
 Usage: wtri [options]
 
-[-host] <name>   : Address to bind
-[-port] <number> : Port number to bind
-[-path] <path>   : Filesystem root path
-[--help]         : Print this help
+[-host] <name>       : Address to bind
+[-port] <number>     : Port to bind
+[-path] <path>       : Filesystem root
+[--uv] <connections> : Use libuv
+[--quiet]            : Disable logging to stdout
+[--help]             : Print this help
 ```
 
 Run eval

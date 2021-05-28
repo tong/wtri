@@ -20,7 +20,7 @@ private function main() {
                 exit( 'Invalid port number' );
             port = number;
         },
-        @doc("Filesystem root path")["-path"] => (path:String) -> {
+        @doc("Filesystem root")["-path"] => (path:String) -> {
             if( !FileSystem.exists( path ) || !FileSystem.isDirectory( path ) )
                 exit( 'Root path not found' );
             root = path;
