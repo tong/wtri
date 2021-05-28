@@ -1,3 +1,4 @@
+import wtri.handler.WebSocketHandler;
 
 var startTime = Sys.time();
 var server(default,null) : wtri.Server;
@@ -41,9 +42,33 @@ private function main() {
     if( root == null ) root = Sys.getCwd();
 
     wtri.Response.defaultHeaders.set( 'server', 'wtri' );
+    
+    var wsHandler = new WebSocketHandler();
+    wsHandler.onconnect = client -> {
+        trace("Websocket client connected",wsHandler.clients.length, client.socket.peer().host );
+        client.onmessage = m -> {
+            trace("Websocket client message: "+m);
+            if( m != null ) {
+                var str = m.toString();
+                switch str {
+                case 'quit':
+                    client.close();
+                case _:
+                    wsHandler.broadcast( m );
+                }
+            }
+        }
+        client.ondisconnect = () -> {
+            trace("Websocket client disconnected",wsHandler.clients.length);
+        }
+        client.write("Welcome!");
+    }
+
+    var fsHandler = new wtri.handler.FileSystemHandler( root );
 
     var handlers : Array<wtri.Handler> = [
-        new wtri.handler.FileSystemHandler( root )
+        wsHandler,
+        fsHandler
     ];
 
     Sys.println('Starting server http://$host:$port' );
