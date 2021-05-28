@@ -19,8 +19,7 @@ class Server {
             tcp.listen( maxConnections, () -> {
                 var s = tcp.accept();
                 s.readStart( bytes -> {
-                    var sock = new wtri.net.Socket.UVSocket(s);
-                    inline process( sock, new BytesInput( bytes ) );
+                    process( new wtri.net.Socket.UVSocket(s), new BytesInput( bytes ) );
                 });
             });
             return this;
@@ -48,8 +47,8 @@ class Server {
         final req = new Request( socket, input );
         final res = req.createResponse();
         handle( req, res );
-        if( res.headers.get( Connection ) == 'close' ) {
-            socket.close();
+        switch res.headers.get( Connection ) {
+        case null,'close': socket.close();
         }
     }
 }

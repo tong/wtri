@@ -67,11 +67,4 @@ class WebSocket {
 		}
 		o.write( data );
     }
-
-   /*  static function hex2data( hex : String ) : String {
-		var buf = new StringBuf();
-		for( i in 0...Std.int( hex.length / 2 ) )
-			buf.add( String.fromCharCode( Std.parseInt( "0x" + hex.substr( i * 2, 2 ) ) ) );
-		return buf.toString();
-	} */
 }
