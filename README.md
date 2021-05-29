@@ -30,11 +30,6 @@ Usage: wtri [options]
 [--help]             : Print this help
 ```
 
-Run eval
-```sh
-haxe -lib wtri --run Main
-```
-
 ## Embed
 
 ```hx
