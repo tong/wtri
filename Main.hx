@@ -1,7 +1,9 @@
-import wtri.handler.WebSocketHandler;
 
-var startTime = Sys.time();
+import sys.FileSystem;
+import wtri.net.Socket;
+
 var server(default,null) : wtri.Server;
+var startTime = Sys.time();
 
 private function main() {
 
@@ -41,9 +43,9 @@ private function main() {
 
     if( root == null ) root = Sys.getCwd();
 
-    wtri.Response.defaultHeaders.set( 'server', 'wtri' );
+    //wtri.Response.defaultHeaders.set( 'server', 'wtri' );
     
-    var wsHandler = new WebSocketHandler();
+    /* var wsHandler = new WebSocketHandler();
     wsHandler.onconnect = client -> {
         trace("Websocket client connected",wsHandler.clients.length, client.socket.peer().host );
         client.onmessage = m -> {
@@ -63,11 +65,15 @@ private function main() {
         }
         client.write("Welcome!");
     }
-
+ */
     var fsHandler = new wtri.handler.FileSystemHandler( root );
+    //fsHandler.cache.file('/84.jpg');
+    //fsHandler.cacheFile('/diamond.json');
+    //fsHandler.cacheFile('/app.js');
+    //fsHandler.cacheFile('/script/three.js');
 
     var handlers : Array<wtri.Handler> = [
-        wsHandler,
+        //wsHandler,
         fsHandler
     ];
 
