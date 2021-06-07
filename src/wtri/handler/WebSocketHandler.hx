@@ -18,19 +18,19 @@ class WebSocketHandler implements wtri.Handler {
 
     public function handle( req : Request, res : Response ) : Bool {
 
-        if( req.headers.get( 'Connection' ) != 'Upgrade' &&
-            req.headers.get( 'Upgrade' ) != 'websocket' )
+        if( req.headers.get( Connection ) != 'Upgrade' &&
+            req.headers.get( Upgrade ) != 'websocket' )
             return false;
-        final skey = req.headers.get('Sec-WebSocket-Key');
+        final skey = req.headers.get( Sec_WebSocket_Key );
         if( skey == null )
             return false;
         //var sversion = req.headers.get('Sec-WebSocket-Version');
         final key = WebSocket.createKey( skey );
         
         res.code = SWITCHING_PROTOCOL;
-        res.headers.set( 'Connection', 'Upgrade' );
-        res.headers.set( 'Upgrade', 'websocket' );
-        res.headers.set( 'Sec-WebSocket-Accept', key );
+        res.headers.set( Connection, 'Upgrade' );
+        res.headers.set( Upgrade, 'websocket' );
+        res.headers.set( Sec_WebSocket_Accept, key );
         res.end();
 
         var client = new Client( this, cast(res.socket, TCPSocket).socket );
