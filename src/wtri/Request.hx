@@ -15,7 +15,7 @@ class Request {
     public final params : Map<String,String>;
     public final headers = new wtri.http.Headers();
     public final data : Data;
-
+    
     public function new( socket : Socket, input : haxe.io.Input ) {
         this.socket = socket;
         var line = input.readLine();
@@ -55,8 +55,12 @@ class Request {
         }
     }
 
+    public function getEncoding( header : HeaderName = Accept_Encoding ) : Array<String> {
+        return headers.exists( header ) ? ~/ ?, ?/g.split( headers.get( header ) ) : [];
+    }
+
     public function createResponse() : Response {
-        final res = new Response( socket );
+        final res = new Response( this );
         if( headers.get( Connection ) == 'keep-alive' ) {
             res.headers.set( Connection, 'close' );
         }
