@@ -1,5 +1,7 @@
 package wtri.handler;
 
+import format.tools.Deflate;
+
 class FileSystemHandler implements wtri.Handler {
 
     public var path : String;
@@ -7,6 +9,7 @@ class FileSystemHandler implements wtri.Handler {
     public var indexFileNames = ['index'];
     public var indexFileTypes = ['html','htm'];
     //public var autoindex = false;
+    // public var contentEncoding : Array<>;
 
     public function new( path : String, ?mime : Map<String,String> ) {
         this.path = FileSystem.fullPath( path.trim() ).removeTrailingSlashes();
@@ -29,19 +32,34 @@ class FileSystemHandler implements wtri.Handler {
     }
 
     public function handle( req : Request, res : Response ) : Bool {
+
         final _path = '${path}${req.path}'.normalize();
         //TODO check path security
         //trace(req.path);
+
         final filePath = findFile( _path );
         if( filePath == null )
             return false;
+        res.headers.set( Content_Type, getFileContentType( filePath ) );
+        var enc = req.getEncoding();
+        var data = File.getBytes( filePath );
+        if( enc.indexOf( 'deflate' ) != -1 ) {
+            data = Deflate.run( data );
+            res.headers.set( Content_Encoding, 'deflate' );
+        }
+
+        /*
         final stat = FileSystem.stat( filePath );
         res.writeHead( [
-            'Content-type' => getFileContentType( filePath ),
-            'Content-length' => Std.string( stat.size )
-        ] );
-        res.writeInput( File.read( filePath ), stat.size );
-        res.end();
+            'Content-type' => contentType,
+            'Content-length' => Std.string( data.length )
+            //'Content-length' => Std.string( stat.size )
+        ] ); */
+        //res.writeInput( File.read( filePath ), stat.size );
+        //res.write(data);
+
+        res.end( data );
+        
         return true;
     }
 
@@ -65,5 +83,4 @@ class FileSystemHandler implements wtri.Handler {
 		final x = path.extension();
 		return mime.exists(x) ? mime.get(x) : 'unknown/unknown';
 	}
-
 }

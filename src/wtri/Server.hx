@@ -5,6 +5,10 @@ class Server {
     public var listening(default,null) = false;
     public var handle : Request->Response->Void;
 
+    #if hl
+    //var loop : hl.uv.Loop;
+    #end
+
     public function new( handle : Request->Response->Void ) {
         this.handle = handle;
     }
@@ -13,13 +17,13 @@ class Server {
         #if sys
         #if hl
         if( uv ) {
-            var loop = hl.uv.Loop.getDefault();
+            //loop = hl.uv.Loop.getDefault();
             var tcp = new hl.uv.Tcp( loop );
             tcp.bind( new sys.net.Host(host), port );
             tcp.listen( maxConnections, () -> {
                 var s = tcp.accept();
                 s.readStart( bytes -> {
-                    process( new wtri.net.Socket.UVSocket(s), new BytesInput( bytes ) );
+                    inline process( new wtri.net.Socket.UVSocket(s), new BytesInput( bytes ) );
                 });
             });
             return this;
@@ -40,6 +44,7 @@ class Server {
 
     public function stop() : Server {
         listening = false;
+        #if hl loop.stop(); #end
         return this;
     }
 

@@ -6,9 +6,10 @@
 	"url": "https://github.com/tong/wtri",
 	"tags": ["net","server","socket","webserver","http","websocket","web","dev","sys"],
 	"license": "Public",
+	"contributors": ["tong"],
 	"classPath": "src/",
 	"dependencies": {
+		"format": "",
 		"hxargs": ""
-	},
-	"contributors": ["tong"]
+	}
 }
