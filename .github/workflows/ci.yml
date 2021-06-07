@@ -19,7 +19,7 @@ jobs:
       - name: Setup
         run: |
           haxelib dev wtri .
-          haxelib install hxargs
+          haxelib install haxelib.json
           haxelib git om.core https://github.com/omlib/om.core
           haxelib git om.http https://github.com/omlib/om.http
       - name: Build
