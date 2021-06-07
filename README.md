@@ -38,4 +38,4 @@ new wtri.Server( (req,res) -> {
     res.end( 'Hello!' );
 }).listen( 8080 );
 ```
-See: [Main.hx](src/Main.hx)
+See: [Main.hx](Main.hx)
