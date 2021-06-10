@@ -1,4 +1,5 @@
 
+import format.tools.Deflate;
 import sys.FileSystem;
 import wtri.net.Socket;
 
@@ -45,7 +46,8 @@ private function main() {
 
     //wtri.Response.defaultHeaders.set( 'server', 'wtri' );
     
-    /* var wsHandler = new WebSocketHandler();
+    /*
+    var wsHandler = new WebSocketHandler();
     wsHandler.onconnect = client -> {
         trace("Websocket client connected",wsHandler.clients.length, client.socket.peer().host );
         client.onmessage = m -> {
@@ -65,36 +67,24 @@ private function main() {
         }
         client.write("Welcome!");
     }
- */
-    var fsHandler = new wtri.handler.FileSystemHandler( root );
-    //fsHandler.cache.file('/84.jpg');
-    //fsHandler.cacheFile('/diamond.json');
-    //fsHandler.cacheFile('/app.js');
-    //fsHandler.cacheFile('/script/three.js');
+    */
 
     var handlers : Array<wtri.Handler> = [
         //wsHandler,
-        fsHandler
+        new wtri.handler.FileSystemHandler( root ),
+        new wtri.handler.ContentEncoding( ["deflate" => b -> return Deflate.run(b)] )
     ];
 
     Sys.println('Starting server http://$host:$port' );
     server = new wtri.Server( (req,res) -> {
-        /* if( req.path == "/favicon.ico" ) {
-            res.redirect('/favicon.svg');
-        } */
         //res.end( 'Hello!' );
-        if( !res.finished ) {
-            var handledBy : wtri.Handler = null;
-            for( h in handlers ) {
-                if( h.handle( req, res ) ) {
-                    handledBy = h;
-                    break;
-                }
-            }
-            if( handledBy == null ) {
-                res.end( NOT_FOUND );
-            }
+        /*
+        if( req.path == "/favicon.ico" ) {
+            res.redirect('/favicon.svg');
         }
+        */
+        for( h in handlers ) h.handle( req, res );
+        if( !res.finished ) res.end();
         if( !quiet ) {
             if( Std.isOfType( req.socket, TCPSocket ) ) {
                 var tcp : wtri.net.Socket.TCPSocket = cast req.socket;

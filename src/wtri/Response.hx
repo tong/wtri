@@ -14,6 +14,7 @@ class Response {
     public var headers : Headers;
     public var headersSent(default,null) = false;
     public var finished(default,null) = false;
+    public var data : Data;
 
     public var socket(get,never) : Socket;
     inline function get_socket() : Socket return request.socket;
@@ -49,15 +50,18 @@ class Response {
     }
 
     public function end( ?code : StatusCode, ?data : Data ) {
+        if( finished )
+            return;
         if( code != null ) this.code = code;
+        if( data != null ) this.data = data;
         if( !headersSent ) {
             var extraHeaders = new Map<String,String>();
-            if( data != null && !this.headers.exists( Content_Length ) ) {
-                extraHeaders.set( Content_Length, Std.string( data.length ) );
+            if( this.data != null && !this.headers.exists( Content_Length ) ) {
+                extraHeaders.set( Content_Length, Std.string( this.data.length ) );
             }
             writeHead( this.code, extraHeaders );
         }
-        if( data != null ) socket.write( data );
+        if( this.data != null ) socket.write( this.data );
         finished = true;
     }
 

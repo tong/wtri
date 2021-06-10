@@ -41,12 +41,14 @@ class FileSystemHandler implements wtri.Handler {
         if( filePath == null )
             return false;
         res.headers.set( Content_Type, getFileContentType( filePath ) );
+        res.data = File.getBytes( filePath );
+        /*
         var enc = req.getEncoding();
-        var data = File.getBytes( filePath );
         if( enc.indexOf( 'deflate' ) != -1 ) {
             data = Deflate.run( data );
             res.headers.set( Content_Encoding, 'deflate' );
-        }
+        } */
+        //res.end( data );
 
         /*
         final stat = FileSystem.stat( filePath );
@@ -57,8 +59,6 @@ class FileSystemHandler implements wtri.Handler {
         ] ); */
         //res.writeInput( File.read( filePath ), stat.size );
         //res.write(data);
-
-        res.end( data );
         
         return true;
     }
