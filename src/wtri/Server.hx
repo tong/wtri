@@ -5,7 +5,7 @@ class Server {
     public var listening(default,null) = false;
     public var handle : Request->Response->Void;
 
-    #if hl
+    #if (hl&&libuv)
     var loop : hl.uv.Loop;
     #end
 
@@ -15,7 +15,7 @@ class Server {
     
     public function listen( port : Int, host = 'localhost', uv = false, maxConnections = 100 ) : Server {
         #if sys
-        #if hl
+        #if (hl&&libuv)
         if( uv ) {
             loop = hl.uv.Loop.getDefault();
             var tcp = new hl.uv.Tcp( loop );
@@ -44,7 +44,9 @@ class Server {
 
     public function stop() : Server {
         listening = false;
-        #if hl loop.stop(); #end
+        #if (hl&&libuv)
+        loop.stop()
+        #end
         return this;
     }
 
