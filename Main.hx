@@ -1,5 +1,5 @@
 
-import format.tools.Deflate;
+// import format.tools.Deflate;
 import sys.FileSystem;
 import wtri.net.Socket;
 
@@ -72,7 +72,8 @@ private function main() {
     var handlers : Array<wtri.Handler> = [
         //wsHandler,
         new wtri.handler.FileSystemHandler( root ),
-        new wtri.handler.ContentEncoding( ["deflate" => b -> return Deflate.run(b)] )
+        //new wtri.handler.ContentEncoding( ["deflate" => b -> return Deflate.run(b)] )
+        new wtri.handler.ContentEncoding( ["deflate" => b -> return haxe.zip.Compress.run(b,9)] )
     ];
 
     Sys.println('Starting server http://$host:$port' );

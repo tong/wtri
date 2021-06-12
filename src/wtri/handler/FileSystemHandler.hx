@@ -1,7 +1,5 @@
 package wtri.handler;
 
-import format.tools.Deflate;
-
 class FileSystemHandler implements wtri.Handler {
 
     public var path : String;
