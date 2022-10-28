@@ -11,20 +11,19 @@ private function main() {
     var host = "localhost";
 	var port = 8080;
 	var root : String = null;
-
     var quiet = false;
     var uv = false;
-    var maxConnections = 100;
+    var maxConnections = 20;
 
     var usage : String = null;
     var argHandler = hxargs.Args.generate([
-        @doc("Address to bind")["-host"] => (name:String) -> host = name,
-        @doc("Port to bind")["-port"] => (number:Int) -> {
+        @doc("Address to bind")["--host"] => (name:String) -> host = name,
+        @doc("Port to bind")["--port"] => (number:Int) -> {
             if( number < 1 || number > 65535 )
-                exit( 'Invalid port number' );
+                exit( 'Port number out of range' );
             port = number;
         },
-        @doc("Filesystem root")["-path"] => (path:String) -> {
+        @doc("Filesystem root")["--root"] => (path:String) -> {
             if( !FileSystem.exists( path ) || !FileSystem.isDirectory( path ) )
                 exit( 'Root path not found' );
             root = path;
@@ -37,17 +36,17 @@ private function main() {
         #end
         @doc("Disable logging to stdout")["--quiet"] => () -> quiet = true,
         @doc("Print this help")["--help"] => () -> exit( usage ),
-        _ => arg -> exit( 1, 'Unknown argument [$arg]\n\n$usage' )
+        _ => arg -> exit( 1, 'Unknown argument [$arg]\n' )
     ]);
     usage = 'Usage: wtri [options]\n\n'+argHandler.getDoc();
     argHandler.parse( Sys.args() );
 
     if( root == null ) root = Sys.getCwd();
 
-    //wtri.Response.defaultHeaders.set( 'server', 'wtri' );
-    
+    wtri.Response.defaultHeaders.set( 'server', 'wtri' );
+   
     /*
-    var wsHandler = new WebSocketHandler();
+    var wsHandler = new wtri.handler.WebSocketHandler();
     wsHandler.onconnect = client -> {
         trace("Websocket client connected",wsHandler.clients.length, client.socket.peer().host );
         client.onmessage = m -> {
@@ -72,8 +71,8 @@ private function main() {
     var handlers : Array<wtri.Handler> = [
         //wsHandler,
         new wtri.handler.FileSystemHandler( root ),
-        //new wtri.handler.ContentEncoding( ["deflate" => b -> return Deflate.run(b)] )
         new wtri.handler.ContentEncoding( ["deflate" => b -> return haxe.zip.Compress.run(b,9)] )
+        //new wtri.handler.ContentEncoding( ["deflate" => b -> return Deflate.run(b)] )
     ];
 
     Sys.println('Starting server http://$host:$port' );
@@ -99,10 +98,18 @@ private function main() {
 }
 
 function log( str : String ) {
-    Sys.stdout().writeString( Std.int((Sys.time() - startTime) * 1000)  +' $str\n' );
+    //Sys.stdout().writeString( Std.int((Sys.time() - startTime) * 1000)  +' $str\n' );
+    Sys.stdout().writeString( Date.now().toString()  +' - $str\n' );
 }
 
 function exit( code = 0, ?msg : String ) {
-    if( msg != null ) Sys.stdout().writeString( '$msg\n' );
+    if( msg != null ) {
+        if(code == 0) {
+            Sys.stdout().writeString( '$msg\n' );
+        } else {
+            Sys.stderr().writeString( '$msg\n' );
+        }
+    }
     Sys.exit( code );
 }
+
