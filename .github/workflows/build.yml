@@ -11,11 +11,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup
-        uses: krdlab/setup-haxe@v1
+        uses: krdlab/setup-haxe@v1.1.7
         with:
-          haxe-version: 4.2.2
+          haxe-version: 4.2.5
       - name: Setup
         run: |
           haxelib dev wtri .
