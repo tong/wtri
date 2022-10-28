@@ -1,5 +1,6 @@
 
-// import format.tools.Deflate;
+import format.tools.Deflate;
+
 import sys.FileSystem;
 import wtri.net.Socket;
 

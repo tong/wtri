@@ -1,7 +1,7 @@
 {
 	"name": "wtri",
 	"description": "Embeddable development web server",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"releasenote": "See CHANGES",
 	"url": "https://github.com/tong/wtri",
 	"tags": ["net","server","socket","webserver","http","websocket","web","dev","sys"],
@@ -9,6 +9,7 @@
 	"contributors": ["tong"],
 	"classPath": "src/",
 	"dependencies": {
+        "format": "",
 		"hxargs": ""
 	}
 }
