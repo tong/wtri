@@ -3,10 +3,12 @@ package wtri;
 class Server {
 
     public var listening(default,null) = false;
+    public var maxConnections(default,null) : Int;
     public var handle : Request->Response->Void;
 
     #if (hl&&libuv)
-    var loop : hl.uv.Loop;
+    public var uv(default,null) : Bool;
+    public var loop(default,null) : hl.uv.Loop;
     #end
 
     public function new( handle : Request->Response->Void ) {
@@ -15,8 +17,9 @@ class Server {
     
     public function listen( port : Int, host = 'localhost', uv = false, maxConnections = 100 ) : Server {
         #if sys
+        this.maxConnections = maxConnections;
         #if (hl&&libuv)
-        if( uv ) {
+        if( this.uv = uv ) {
             loop = hl.uv.Loop.getDefault();
             var tcp = new hl.uv.Tcp( loop );
             tcp.bind( new sys.net.Host(host), port );
@@ -59,3 +62,4 @@ class Server {
         }
     }
 }
+
