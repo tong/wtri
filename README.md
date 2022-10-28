@@ -4,7 +4,6 @@ Embeddable haxe/sys web server.
 
 [![Build](https://github.com/tong/wtri/actions/workflows/build.yml/badge.svg)](https://github.com/tong/wtri/actions/workflows/build.yml)
 
-
 ## Build
 
 ```sh
