@@ -72,7 +72,7 @@ private function main() {
     var handlers : Array<wtri.Handler> = [
         //wsHandler,
         new wtri.handler.FileSystemHandler( root ),
-        new wtri.handler.ContentEncoding( ["deflate" => b -> return haxe.zip.Compress.run(b,9)] )
+        //new wtri.handler.ContentEncoding( ["deflate" => b -> return haxe.zip.Compress.run(b,9)] )
         //new wtri.handler.ContentEncoding( ["deflate" => b -> return Deflate.run(b)] )
     ];
 

@@ -1,0 +1,4 @@
+-main Main
+-lib wtri
+-dce full
+-D analyzer-optimize

@@ -1,10 +1,12 @@
-test/
 cpp/
 out/
 php/
+test/
 _*
-*.js
-*.n
 *.hl
 *.hdll
-/wtri
+*.jar
+*.js
+*.lua
+*.n
+*.py
