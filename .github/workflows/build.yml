@@ -2,9 +2,7 @@ name: build
 
 on:
   push:
-    branches: [ master ]
   pull_request:
-    branches: [ master ]
   workflow_dispatch:
 
 jobs:
@@ -13,13 +11,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Setup
-        uses: krdlab/setup-haxe@v1.1.7
+        uses: krdlab/setup-haxe@v1.4.0
         with:
           haxe-version: 4.2.5
       - name: Setup
         run: |
           haxelib dev wtri .
           haxelib install haxelib.json
+          haxelib install hashlink
+          haxelib install hxcpp
           haxelib git om.core https://github.com/omlib/om.core
           haxelib git om.http https://github.com/omlib/om.http
       - name: Build hl
