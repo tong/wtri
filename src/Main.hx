@@ -1,6 +1,3 @@
-
-import format.tools.Deflate;
-
 import sys.FileSystem;
 import wtri.net.Socket;
 
@@ -71,9 +68,12 @@ private function main() {
 
     var handlers : Array<wtri.Handler> = [
         //wsHandler,
+        #if neko
+        new wtri.handler.NekoHandler(),
+        #end
         new wtri.handler.FileSystemHandler( root ),
         //new wtri.handler.ContentEncoding( ["deflate" => b -> return haxe.zip.Compress.run(b,9)] )
-        //new wtri.handler.ContentEncoding( ["deflate" => b -> return Deflate.run(b)] )
+        //new wtri.handler.ContentEncoding( ["deflate" => b -> return format.tools.Deflate.run(b)] )
     ];
 
     Sys.println('Starting server http://$host:$port' );
@@ -99,16 +99,14 @@ private function main() {
 }
 
 function log( str : String ) {
-    //Sys.stdout().writeString( Std.int((Sys.time() - startTime) * 1000)  +' $str\n' );
-    Sys.stdout().writeString( Date.now().toString()  +' - $str\n' );
+    Sys.stdout().writeString(Date.now().toString()+' - $str\n');
 }
 
 function exit( code = 0, ?msg : String ) {
     if( msg != null ) {
-        if(code == 0) {
-            Sys.stdout().writeString( '$msg\n' );
-        } else {
-            Sys.stderr().writeString( '$msg\n' );
+        switch code {
+        case 0: Sys.stdout().writeString( '$msg\n' );
+        case _: Sys.stderr().writeString( '$msg\n' );
         }
     }
     Sys.exit( code );
