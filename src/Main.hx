@@ -69,7 +69,7 @@ private function main() {
     var handlers : Array<wtri.Handler> = [
         //wsHandler,
         #if neko
-        new wtri.handler.NekoHandler(),
+        //new wtri.handler.NekoHandler(),
         #end
         new wtri.handler.FileSystemHandler( root ),
         //new wtri.handler.ContentEncoding( ["deflate" => b -> return haxe.zip.Compress.run(b,9)] )
