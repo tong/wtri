@@ -23,16 +23,16 @@ jobs:
           haxelib git om.core https://github.com/omlib/om.core
           haxelib git om.http https://github.com/omlib/om.http
       - name: Build hl
-        run: haxe include.hxml -hl wtri.hl
+        run: haxe wtri.hxml -hl wtri.hl
       - name: Build hlc
-        run: haxe include.hxml -hl out/main.c
+        run: haxe wtri.hxml -hl out/main.c
       - name: Build neko
-        run: haxe include.hxml -neko wtri.n
+        run: haxe wtri.hxml -neko wtri.n
       - name: Build python
-        run: haxe include.hxml -python wtri.py
+        run: haxe wtri.hxml -python wtri.py
       - name: Build jvm
-        run: haxe include.hxml -lua wtri.lua -D lua-vanilla -D lua-jit
+        run: haxe wtri.hxml -lua wtri.lua -D lua-vanilla -D lua-jit
       - name: Build cpp
-        run: haxe include.hxml -cpp cpp
+        run: haxe wtri.hxml -cpp cpp
       - name: Build php
-        run: haxe include.hxml -php php
+        run: haxe wtri.hxml -php php
