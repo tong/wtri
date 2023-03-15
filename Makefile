@@ -10,8 +10,8 @@ all: build
 
 build: wtri
 
-out/main.c: $(SRC) build.hxml
-	haxe build.hxml -hl $@
+out/main.c: $(SRC) wtri.hxml
+	haxe wtri.hxml -hl $@
 
 wtri: out/main.c
 	${CC} -o $@ out/main.c ${CFLAGS} ${INCLUDE} -lhl -luv ${HDLL}

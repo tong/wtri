@@ -1,4 +1,5 @@
 cpp/
+lib/
 out/
 php/
 test/
@@ -10,3 +11,4 @@ _*
 *.lua
 *.n
 *.py
+wtri

@@ -11,9 +11,12 @@ git clone https://github.com/tong/wtri.git
 cd wtri/
 haxelib dev wtri .
 
-haxe build.hxml -neko wtri.n # Neko
-haxe build.hxml -hl wtri.hl # Hashlink
 make # HashlinkC
+haxe wtri.hxml -hl wtri.hl
+haxe wtri.hxml -neko wtri.n
+haxe wtri.hxml -python wtri.py
+haxe wtri.hxml -lua wtri.lua
+haxe wtri.hxml --jvm wtri.jar
 ```
 
 ## Run
@@ -37,4 +40,5 @@ new wtri.Server( (req,res) -> {
     res.end( 'Hello!' );
 }).listen( 8080 );
 ```
-See: [Main.hx](Main.hx)
+See: [Main.hx](https://github.com/tong/wtri/blob/master/src/Main.hx)
+
