@@ -2,7 +2,6 @@ CFLAGS = -O3 -Wall -std=c11 -msse2 -mfpmath=sse -m64 -fPIC -pthread -fno-omit-fr
 INCLUDE = -Iout -I/usr/local/include
 LFLAGS = -lhl
 SRC := $(shell find src/ -type f -name '*.hx')
-#SRC_C := lib/websocket.c /home/tong/src/hashlink/src/std/*.c
 HDLL = /usr/local/lib/fmt.hdll /usr/local/lib/uv.hdll
 #LIBFLAGS = 
 
