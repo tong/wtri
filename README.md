@@ -14,6 +14,7 @@ haxelib dev wtri .
 make # HashlinkC
 haxe wtri.hxml -hl wtri.hl
 haxe wtri.hxml -neko wtri.n
+haxe wtri.hxml -cpp cpp
 haxe wtri.hxml -python wtri.py
 haxe wtri.hxml -lua wtri.lua -D lua-vanilla -D lua-jit
 haxe wtri.hxml --jvm wtri.jar
