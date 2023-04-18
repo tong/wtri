@@ -20,7 +20,7 @@ class Request {
         this.socket = socket;
         var line = input.readLine();
         if( !EXPR_HTTP.match( line ) )
-            return throw new Error( BAD_REQUEST );
+            throw new Error( BAD_REQUEST );
         method = EXPR_HTTP.matched(1);
         path = EXPR_HTTP.matched(2);
         protocol = EXPR_HTTP.matched(3);
@@ -39,7 +39,7 @@ class Request {
             if( (line = input.readLine()).length == 0 )
                 break;
             if( !EXPR_HTTP_HEADER.match( line ) )
-                return throw new Error( BAD_REQUEST );
+                throw new Error( BAD_REQUEST );
             key = EXPR_HTTP_HEADER.matched(1);
             val = EXPR_HTTP_HEADER.matched(2);
             headers.set( key, val );
@@ -48,7 +48,7 @@ class Request {
         case POST, PUT:
             final _len = headers.get( Content_Length );
             if( _len == null )
-                return throw new Error( BAD_REQUEST );
+                throw new Error( BAD_REQUEST );
             final len = Std.parseInt( headers.get( Content_Length ) );
             input.readBytes( data = Bytes.alloc( len ), 0, len );
         case _:
