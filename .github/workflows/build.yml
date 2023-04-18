@@ -20,7 +20,8 @@ jobs:
           haxelib install haxelib.json
           haxelib install hashlink
           haxelib install hxcpp
-          haxelib git om.core https://github.com/omlib/om.core
+          haxelib git hxargs https://github.com/Simn/hxargs
+          haxelib git om.http https://github.com/omlib/om.http
           haxelib git om.http https://github.com/omlib/om.http
       - name: Build hl
         run: haxe wtri.hxml -hl wtri.hl
