@@ -5,11 +5,12 @@ import wtri.net.WebSocket;
 
 class WebSocketHandler implements wtri.Handler {
 
+    public var path : String;
+    public var onconnect : Client->Void;
     public var clients(default,null) = new Array<Client>();
 
-    public var onconnect : Client->Void;
-
-    public function new( ?onconnect : Client->Void ) {
+    public function new(path: String, ?onconnect: Client->Void) {
+        this.path = path;
         this.onconnect = onconnect;
     }
 
@@ -17,7 +18,8 @@ class WebSocketHandler implements wtri.Handler {
         return clients.iterator();
 
     public function handle( req : Request, res : Response ) : Bool {
-
+        if(req.path != '/$path')
+            return false;
         if( req.headers.get( Connection ) != 'Upgrade' &&
             req.headers.get( Upgrade ) != 'websocket' )
             return false;
@@ -26,28 +28,29 @@ class WebSocketHandler implements wtri.Handler {
             return false;
         //var sversion = req.headers.get('Sec-WebSocket-Version');
         final key = WebSocket.createKey( skey );
-        
         res.code = SWITCHING_PROTOCOL;
         res.headers.set( Connection, 'Upgrade' );
         res.headers.set( Upgrade, 'websocket' );
         res.headers.set( Sec_WebSocket_Accept, key );
         res.end();
-
-        var client = new Client( this, cast(res.socket, TCPSocket).socket );
+        final client = createClient(cast(res.socket, TCPSocket).socket);
+        //if(client == null) return false;
         clients.push( client );
         client.read();
         onconnect( client );
-        //client.write('Welcome!');
-
         return true;
     }
 
     public function broadcast( data : Data ) {
         for( c in clients ) c.write( data );
     }
+
+    function createClient(socket: sys.net.Socket) : Client {
+        return new Client(this, socket);
+    }
 }
 
-private class Client {
+class Client {
 
     public dynamic function onmessage( message : Bytes ) {}
     public dynamic function ondisconnect() {}
