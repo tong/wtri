@@ -4,40 +4,47 @@ class FileSystemHandler implements wtri.Handler {
 
     public var path : String;
     public var mime : Map<String,String>;
-    public var indexFileNames = ['index'];
-    public var indexFileTypes = ['html','htm'];
+    public var indexFileNames : Array<String>;
+    public var indexFileTypes : Array<String>;
     //public var autoindex = false;
     // public var contentEncoding : Array<>;
 
-    public function new( path : String, ?mime : Map<String,String> ) {
+    public function new(path:String, ?mime:Map<String,String>, ?indexFileNames:Array<String>, ?indexFileTypes:Array<String>) {
         this.path = FileSystem.fullPath( path.trim() ).removeTrailingSlashes();
-        this.mime = (mime != null) ? mime : [
-            "css" => TextCss,
-            "html" => TextHtml,
-            "gif" => ImageGif,
-            "ico" => "image/x-icon",
-            'jpg' => ImageJpeg,
-            "js" => TextJavascript,
-            "json" => ApplicationJson,
-            'png' => ImagePng,
-            'svg' => "image/svg+xml",
-            'txt' => TextPlain,
-            'xml' => ApplicationXml,
-            "webp" => ImageWebp,
-            "woff" => 'font/woff',
-            "woff2" => 'font/woff2',
+        this.mime = mime ?? [
+            "css"   => TextCss,
+            "gif"   => ImageGif,
+            "html"  => TextHtml,
+            "ico"   => "image/x-icon",
+            "jpg"   => ImageJpeg,
+            "jpeg"  => ImageJpeg,
+            "js"    => TextJavascript,
+            "json"  => ApplicationJson,
+            "png"   => ImagePng,
+            "svg"   => "image/svg+xml",
+            "txt"   => TextPlain,
+            "webp"  => ImageWebp,
+            "woff"  => "font/woff",
+            "woff2" => "font/woff2",
+            "xml"   => ApplicationXml,
         ];
+        this.indexFileNames = indexFileNames ?? ["index"];
+        this.indexFileTypes = indexFileTypes ?? ["html","htm"];
     }
 
     public function handle( req : Request, res : Response ) : Bool {
 
         final _path = '${path}${req.path}'.normalize();
+
         //TODO check path security
         //trace(req.path);
 
         final filePath = findFile( _path );
-        if( filePath == null )
+        if( filePath == null ) {
+            //res.code = NOT_FOUND;
             return false;
+        }
+
         res.headers.set( Content_Type, getFileContentType( filePath ) );
         res.data = File.getBytes( filePath );
         /*
@@ -57,7 +64,6 @@ class FileSystemHandler implements wtri.Handler {
         ] ); */
         //res.writeInput( File.read( filePath ), stat.size );
         //res.write(data);
-        
         return true;
     }
 
