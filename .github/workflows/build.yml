@@ -8,20 +8,26 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        haxe:
+        - latest
+        - 4.3.1
     steps:
       - uses: actions/checkout@v3
-      - name: Setup
-        uses: krdlab/setup-haxe@v1.5.0
+      - name: Install haxe
+        uses: krdlab/setup-haxe@v1.5.1
         with:
-          haxe-version: 4.3.0
-      - name: Setup
+          haxe-version: ${{ matrix.haxe }}
+      - name: Install haxelibs
         run: |
           haxelib dev wtri .
           haxelib install haxelib.json
           haxelib install hashlink
           haxelib install hxcpp
           haxelib git hxargs https://github.com/Simn/hxargs
-          haxelib git om.http https://github.com/omlib/om.http
+          haxelib git om.core https://github.com/omlib/om.core
           haxelib git om.http https://github.com/omlib/om.http
       - name: Build hl
         run: haxe wtri.hxml -hl wtri.hl
