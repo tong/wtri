@@ -9,7 +9,6 @@
 	"contributors": ["tong"],
 	"classPath": "src/",
 	"dependencies": {
-        "format": "",
-		"hxargs": ""
+        "format": ""
 	}
 }
