@@ -14,7 +14,7 @@ private function main() {
     var maxConnections = 20;
 
     var usage : String = null;
-    var argHandler = hxargs.Args.generate([
+    var argHandler = om.Args.generate([
         @doc("Address to bind")["--host"] => (name:String) -> host = name,
         @doc("Port to bind")["--port"] => (number:Int) -> {
             if( number < 1 || number > 65535 )
