@@ -26,7 +26,7 @@ jobs:
           haxelib install haxelib.json
           haxelib install hashlink
           haxelib install hxcpp
-          haxelib git om.args https://github.com/omlib/om.args
+          haxelib git hxargs https://github.com/Simn/hxargs
           haxelib git om.core https://github.com/omlib/om.core
           haxelib git om.http https://github.com/omlib/om.http
       - name: Build hl

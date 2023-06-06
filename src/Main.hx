@@ -1,3 +1,4 @@
+import hxargs.Args;
 import sys.FileSystem;
 import wtri.net.Socket;
 
@@ -14,7 +15,7 @@ private function main() {
     var maxConnections = 20;
 
     var usage : String = null;
-    var argHandler = om.Args.generate([
+    var argHandler = Args.generate([
         @doc("Address to bind")["--host"] => (name:String) -> host = name,
         @doc("Port to bind")["--port"] => (number:Int) -> {
             if( number < 1 || number > 65535 )
