@@ -34,7 +34,7 @@ class FileSystemHandler implements wtri.Handler {
 
     public function handle( req : Request, res : Response ) : Bool {
 
-        final _path = '${path}${req.path}'.normalize();
+        final _path = resolvePath(req.path);
 
         //TODO check path security
         //trace(req.path);
@@ -65,6 +65,10 @@ class FileSystemHandler implements wtri.Handler {
         //res.writeInput( File.read( filePath ), stat.size );
         //res.write(data);
         return true;
+    }
+
+    function resolvePath(path: String) : String {
+        return '${this.path}${path}'.normalize();
     }
 
     function findFile( path : String ) : String {
