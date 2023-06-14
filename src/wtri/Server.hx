@@ -4,7 +4,6 @@ class Server {
 
     public var listening(default,null) = false;
     public var maxConnections(default,null) : Int;
-
     public var handle : Request->Response->Void;
 
     #if (hl&&libuv)
@@ -16,15 +15,15 @@ class Server {
         this.handle = handle;
     }
 
-    public function listen( port : Int, host = 'localhost', uv = false, maxConnections = 100 ) : Server {
+    public function listen(port: Int, host='localhost', uv=false, maxConnections=10) : Server {
         #if sys
         this.maxConnections = maxConnections;
         #if (hl&&libuv)
         if( this.uv = uv ) {
             loop = hl.uv.Loop.getDefault();
-            var tcp = new hl.uv.Tcp( loop );
-            tcp.bind( new sys.net.Host(host), port );
-            tcp.listen( maxConnections, () -> {
+            var tcp = new hl.uv.Tcp(loop);
+            tcp.bind( new sys.net.Host(host), port);
+            tcp.listen(maxConnections, () -> {
                 var s = tcp.accept();
                 s.readStart( bytes -> {
                     inline process( new wtri.net.Socket.UVSocket(s), new BytesInput( bytes ) );
@@ -50,16 +49,16 @@ class Server {
         if(listening) {
             listening = false;
             #if (hl&&libuv)
-            loop.stop()
+            loop.stop();
             #end
         }
     }
 
-    public function process( socket : Socket, ?input : haxe.io.Input ) {
-        final req = new Request( socket, input );
+    public function process(socket: Socket, ?input: haxe.io.Input) {
+        final req = new Request(socket, input);
         final res = createResponse(req);
-        handle( req, res );
-        switch res.headers.get( Connection ) {
+        handle(req, res);
+        switch res.headers.get(Connection) {
         case null,'close': socket.close();
         }
     }
