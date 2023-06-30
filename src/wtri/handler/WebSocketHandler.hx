@@ -33,8 +33,14 @@ class WebSocketHandler implements wtri.Handler {
         res.headers.set( Upgrade, 'websocket' );
         res.headers.set( Sec_WebSocket_Accept, key );
         res.end();
+        switch Type.typeof(res.socket) {
+        case TClass(c):
+            if(Type.getClassName(c) != 'wtri.net.TCPSocket')
+                return false;
+        case _:
+        }
         final client = createClient(cast(res.socket, TCPSocket).socket);
-        //if(client == null) return false;
+        if(client == null) return false;
         clients.push( client );
         client.read();
         onconnect( client );
@@ -67,18 +73,17 @@ class Client {
 
     public function read() {
         thread = Thread.create( () -> {
-            //var main : Thread = Thread.readMessage( true );
             var sock : sys.net.Socket = Thread.readMessage( true );
             var _onmessage : Bytes->Void = Thread.readMessage( true );
             var _ondisconnect : Void->Void = Thread.readMessage( true );
             var frame : Bytes = null;
             while( true ) {
                 try {
-                    frame = WebSocket.readFrame( sock.input );
-                } catch(e:haxe.io.Eof) {
-                    trace(e);
-                    _ondisconnect();
-                    break;
+                    frame = WebSocket.readFrame(sock.input);
+                // } catch(e:haxe.io.Eof) {
+                //     trace(e);
+                //     _ondisconnect();
+                //     break;
                 } catch(e) {
                     trace(e);
                     _ondisconnect();
@@ -87,7 +92,6 @@ class Client {
                 if( frame != null ) _onmessage( frame );
             }
         });
-        //thread.sendMessage( Thread.current() );
         thread.sendMessage( socket );
         thread.sendMessage( s -> {
             onmessage(s);
@@ -103,8 +107,10 @@ class Client {
 
     public function close() {
         handler.clients.remove( this );
-        try socket.close() catch(e) {
-            trace(e);
+        if(socket != null) {
+            try socket.close() catch(e) {
+                trace(e);
+            }
         }
         ondisconnect();
     }

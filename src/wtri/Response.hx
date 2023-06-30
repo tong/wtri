@@ -24,7 +24,7 @@ class Response {
         this.protocol = protocol;
         this.headers = (headers != null) ? headers : [];
     }
-    
+
     public function writeHead( ?code : StatusCode, ?extraHeaders :Headers ) {
         if( code != null ) this.code = code;
         writeLine( '${protocol} ${this.code} '+StatusMessage.fromStatusCode( this.code ) );
@@ -65,8 +65,7 @@ class Response {
         finished = true;
     }
 
-    inline function writeLine( str : String ) {
-        socket.write( '$str\r\n' );
+    inline function writeLine(line: Data) {
+        socket.write('$line\r\n');
     }
-
 }

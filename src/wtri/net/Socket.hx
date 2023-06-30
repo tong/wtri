@@ -37,7 +37,7 @@ class UVSocket implements Socket {
 
     public inline function writeInput( input : haxe.io.Input, len : Int )
         socket.write( input.readAll() );
-       
+
     public inline function close()
         socket.close();
 }
