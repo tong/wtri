@@ -4,8 +4,20 @@ Embeddable haxe/sys web server.
 
 [![Build](https://github.com/tong/wtri/actions/workflows/build.yml/badge.svg)](https://github.com/tong/wtri/actions/workflows/build.yml)
 
-## Build
+## Embed
+```hx
+new wtri.Server( (req,res) -> {
+    Sys.println( req.path );
+    res.end( 'Hello!' );
+}).listen( 8080 );
+```
+See: [Main.hx](https://github.com/tong/wtri/blob/master/src/Main.hx)
 
+---
+
+## Example server
+
+### Build
 ```sh
 git clone https://github.com/tong/wtri.git
 cd wtri/
@@ -20,8 +32,7 @@ haxe wtri.hxml -lua wtri.lua -D lua-vanilla -D lua-jit
 haxe wtri.hxml --jvm wtri.jar
 ```
 
-## Run
-
+### Run
 ```sh
 Usage: wtri [options]
 
@@ -32,14 +43,4 @@ Usage: wtri [options]
 [--quiet]            : Disable logging to stdout
 [--help]             : Print this help
 ```
-
-## Embed
-
-```hx
-new wtri.Server( (req,res) -> {
-    Sys.println( req.path );
-    res.end( 'Hello!' );
-}).listen( 8080 );
-```
-See: [Main.hx](https://github.com/tong/wtri/blob/master/src/Main.hx)
 
