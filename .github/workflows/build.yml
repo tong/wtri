@@ -13,7 +13,7 @@ jobs:
       matrix:
         haxe:
         - latest
-        - 4.3.1
+        - 4.3.3
     steps:
       - uses: actions/checkout@v3
       - name: Install haxe
