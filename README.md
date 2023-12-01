@@ -28,8 +28,8 @@ Usage: wtri [options]
 [--host] <name>      : Address to bind
 [--port] <number>    : Port to bind
 [--root] <path>      : Filesystem root
-[--uv] <connections> : Use libuv (hashlink only)
-[--quiet]            : Disable logging
+[--uv] <connections> : Use libuv
+[--quiet]            : Disable logging to stdout
 [--help]             : Print this help
 ```
 
