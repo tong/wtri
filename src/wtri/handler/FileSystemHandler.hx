@@ -41,10 +41,9 @@ class FileSystemHandler implements wtri.Handler {
 
         final filePath = findFile( _path );
         if( filePath == null ) {
-            //res.code = NOT_FOUND;
+            res.code = NOT_FOUND;
             return false;
         }
-
         res.headers.set( Content_Type, getFileContentType( filePath ) );
         res.data = File.getBytes( filePath );
         /*
@@ -65,30 +64,30 @@ class FileSystemHandler implements wtri.Handler {
         //res.writeInput( File.read( filePath ), stat.size );
         //res.write(data);
         return true;
-    }
+  }
 
-    function resolvePath(path: String) : String {
-        return '${this.path}${path}'.normalize();
-    }
+  function resolvePath(path: String) : String {
+      return '${this.path}${path}'.normalize();
+  }
 
-    function findFile( path : String ) : String {
-		if( !FileSystem.exists( path ) )
-			return null;
-		if( FileSystem.isDirectory( path ) )
-			return findIndexFile( path );
-		return path;
-	}
+  function findFile( path : String ) : String {
+      if( !FileSystem.exists( path ) )
+        return null;
+      if( FileSystem.isDirectory( path ) )
+        return findIndexFile( path );
+      return path;
+  }
 
-    function findIndexFile( path : String ) : String {
-		final r = new EReg( '(${indexFileNames.join("|")}).(${indexFileTypes.join("|")})$', '' );
-		for( f in FileSystem.readDirectory( path ) )
-			if( r.match( f ) )
-				return path +'/'+ r.matched(1) + '.' + r.matched(2);
-		return null;
-	}
+  function findIndexFile( path : String ) : String {
+      final r = new EReg( '(${indexFileNames.join("|")}).(${indexFileTypes.join("|")})$', '' );
+      for( f in FileSystem.readDirectory( path ) )
+        if( r.match( f ) )
+          return path +'/'+ r.matched(1) + '.' + r.matched(2);
+      return null;
+  }
 
-    function getFileContentType( path : String ) : String {
-		final x = path.extension();
-		return mime.exists(x) ? mime.get(x) : 'unknown/unknown';
+  function getFileContentType( path : String ) : String {
+		  final x = path.extension().toLowerCase();
+		  return mime.exists(x) ? mime.get(x) : 'unknown/unknown';
 	}
 }
