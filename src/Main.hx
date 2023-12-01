@@ -91,9 +91,9 @@ private function main() {
             if( Std.isOfType( req.socket, TCPSocket ) ) {
                 var tcp : wtri.net.Socket.TCPSocket = cast req.socket;
                 var peer = tcp.socket.peer();
-                log( '${peer.host} - ${req.method} ${req.path} - ${res.code}' );
+                log( '${peer.host} - ${req.method} - ${res.code} - ${req.path}' );
             } else {
-                log( '${req.method} ${req.path} - ${res.code}' );
+                log( '${req.method} - ${res.code} - ${req.path}' );
             }
         }
     }).listen( port, host, uv, maxConnections );
