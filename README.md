@@ -6,10 +6,10 @@ Embeddable haxe/sys web server.
 
 ## Embed
 ```hx
-new wtri.Server( (req,res) -> {
-    Sys.println( req.path );
-    res.end( 'Hello!' );
-}).listen( 8080 );
+new wtri.Server((req,res)-> {
+    Sys.println(req.path);
+    res.end('Hello!');
+}).listen(8080);
 ```
 See: [Main.hx](https://github.com/tong/wtri/blob/master/src/Main.hx)
 
@@ -23,13 +23,13 @@ git clone https://github.com/tong/wtri.git
 cd wtri/
 haxelib dev wtri .
 
-make # HashlinkC
 haxe wtri.hxml -hl wtri.hl
 haxe wtri.hxml -neko wtri.n
 haxe wtri.hxml -cpp cpp
 haxe wtri.hxml -python wtri.py
 haxe wtri.hxml -lua wtri.lua -D lua-vanilla -D lua-jit
 haxe wtri.hxml --jvm wtri.jar
+make # HashlinkC
 ```
 
 ### Run
