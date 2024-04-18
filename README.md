@@ -1,16 +1,16 @@
-WTRI
-====
+# WTRI
+
 Embeddable haxe/sys web server.
 
-[![Build](https://github.com/tong/wtri/actions/workflows/build.yml/badge.svg)](https://github.com/tong/wtri/actions/workflows/build.yml)
-
 ## Embed
+
 ```hx
 new wtri.Server((req,res)-> {
     Sys.println(req.path);
     res.end('Hello!');
 }).listen(8080);
 ```
+
 See: [Main.hx](https://github.com/tong/wtri/blob/master/src/Main.hx)
 
 ---
@@ -18,6 +18,7 @@ See: [Main.hx](https://github.com/tong/wtri/blob/master/src/Main.hx)
 ## Example server
 
 ### Build
+
 ```sh
 git clone https://github.com/tong/wtri.git
 cd wtri/
@@ -33,6 +34,7 @@ make # HashlinkC
 ```
 
 ### Run
+
 ```sh
 Usage: wtri [options]
 
@@ -44,3 +46,4 @@ Usage: wtri [options]
 [--help]             : Print this help
 ```
 
+[![Build](https://github.com/tong/wtri/actions/workflows/build.yml/badge.svg)](https://github.com/tong/wtri/actions/workflows/build.yml)
