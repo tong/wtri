@@ -5,11 +5,9 @@ class FileSystemHandler implements wtri.Handler {
 	public var mime:Map<String, String>;
 	public var indexFileNames:Array<String>;
 	public var indexFileTypes:Array<String>;
+	public var autoIndex = true;
 
-	// public var autoindex = false;
-	// public var contentEncoding : Array<>;
-
-	public function new(path:String, ?mime:Map<String, String>, ?indexFileNames:Array<String>, ?indexFileTypes:Array<String>) {
+	public function new(path:String, ?mime:Map<String, String>, ?indexFileNames:Array<String>, ?indexFileTypes:Array<String>, ?autoIndex = true) {
 		this.path = FileSystem.fullPath(path.trim()).removeTrailingSlashes();
 		this.mime = mime ?? [
 			"css" => TextCss, "gif" => ImageGif, "html" => TextHtml, "ico" => "image/x-icon", "jpg" => ImageJpeg, "jpeg" => ImageJpeg, "js" => TextJavascript,
@@ -18,6 +16,7 @@ class FileSystemHandler implements wtri.Handler {
 		];
 		this.indexFileNames = indexFileNames ?? ["index"];
 		this.indexFileTypes = indexFileTypes ?? ["html", "htm"];
+		this.autoIndex = autoIndex;
 	}
 
 	public function handle(req:Request, res:Response):Bool {
@@ -25,8 +24,19 @@ class FileSystemHandler implements wtri.Handler {
 		// TODO: check path security
 		final filePath = findFile(_path);
 		if (filePath == null) {
-			res.code = NOT_FOUND;
-			return false;
+			if (autoIndex) {
+				if (FileSystem.isDirectory(_path)) {
+					var html = createAutoIndex(_path, req.path);
+					res.headers.set(Content_Type, "text/html");
+					res.headers.set(Content_Length, Std.string(html.length));
+					res.data = html;
+				} else {
+					res.code = NOT_FOUND;
+				}
+			} else {
+				res.code = NOT_FOUND;
+			}
+			return true;
 		}
 		res.headers.set(Content_Type, getFileContentType(filePath));
 		res.data = File.getBytes(filePath);
@@ -75,5 +85,29 @@ class FileSystemHandler implements wtri.Handler {
 	function getFileContentType(path:String):String {
 		final x = path.extension().toLowerCase();
 		return mime.exists(x) ? mime.get(x) : 'unknown/unknown';
+	}
+
+	function createAutoIndex(path:String, reqPath:String):String {
+		final entries = FileSystem.readDirectory(path);
+		final directories = new Array<String>();
+		final files = new Array<String>();
+		var html = '<html><title>Index of $reqPath</title><body><pre><table>';
+		for (e in entries)
+			FileSystem.isDirectory('$path/$e') ? directories.push(e) : files.push(e);
+		function sort(a:String, b:String)
+			return (a > b) ? 1 : (a < b) ? -1 : 0;
+		directories.sort(sort);
+		files.sort(sort);
+		for (e in directories) {
+			final lp = reqPath.removeTrailingSlashes() + '/' + e;
+			final stat = FileSystem.stat('$path/$e');
+			html += '<tr><td><a href="$lp">$e</a></td><td>${stat.mtime}</td><td>-</td></tr>';
+		}
+		for (e in files) {
+			final lp = reqPath.removeTrailingSlashes() + '/' + e;
+			final stat = FileSystem.stat('$path/$e');
+			html += '<tr><td><a href="$lp">$e</a></td><td>${stat.mtime}</td><td>-</td><td>${stat.size}</td></tr>';
+		}
+		return html + '</pre></table></body></html>';
 	}
 }
