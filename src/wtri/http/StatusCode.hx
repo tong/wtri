@@ -1,23 +1,22 @@
 package wtri.http;
 
 enum abstract StatusCode(Int) from Int to Int {
-
 	// --- 1xx Informational - Request received, continuing process
 
 	/**
 		The server has received the request headers and the client should proceed to send the request body
-	*/
+	 */
 	var CONTINUE = 100;
 
 	/**
 		The requester has asked the server to switch protocols and the server has agreed to do so
-	*/
+	 */
 	var SWITCHING_PROTOCOL = 101;
+
 	var PROCESSING = 102;
 	var EARLY_HINTS = 103;
 
 	// --- 2xx Success - The action was successfully received, understood, and accepted
-
 	var OK = 200;
 	var CREATED = 201;
 	var ACCEPTED = 202;
@@ -33,7 +32,6 @@ enum abstract StatusCode(Int) from Int to Int {
 	var LOW_ON_STORAGE_SPACE = 250;
 
 	// --- 3xx Redirection - Further action must be taken in order to complete the request
-
 	var MULTIPLE_CHOICE = 300;
 	var MOVED_PERMANENTLY = 301;
 	var FOUND = 302;
@@ -45,7 +43,6 @@ enum abstract StatusCode(Int) from Int to Int {
 	var PERMANENT_REDIRECT = 308;
 
 	// --- 4xx Client Error - The request contains bad syntax or cannot be fulfilled
-
 	var BAD_REQUEST = 400;
 	var UNAUTHORIZED = 401;
 	var PAYMENT_REQUIRED = 402;
@@ -54,8 +51,9 @@ enum abstract StatusCode(Int) from Int to Int {
 	/**
 		The requested resource could not be found but may be available in the future.
 		Subsequent requests by the client are permissible.
-	*/
+	 */
 	var NOT_FOUND = 404;
+
 	var METHOD_NOT_ALLOWED = 405;
 	var NOT_ACCEPTABLE = 406;
 	var PROXY_AUTHENTICATION_REQUIRED = 407;
@@ -77,7 +75,7 @@ enum abstract StatusCode(Int) from Int to Int {
 	var UNPROCESSABLE_ENTITY = 422;
 	var LOCKED = 423;
 	var FAILED_DEPENDENCY = 424;
-	//var METHOD_FAILURE = 424;
+	// var METHOD_FAILURE = 424;
 	var UNORDERED_COLLECTION = 425;
 	var UPGRADE_REQUIRED = 426;
 	var PRECONDITION_REQUIRED = 428;
@@ -98,8 +96,9 @@ enum abstract StatusCode(Int) from Int to Int {
 
 	/**
 		The server either does not recognize the request method, or it lacks the ability to fulfil the request
-	*/
+	 */
 	var INTERNAL_SERVER_ERROR = 500;
+
 	var NOT_IMPLEMENTED = 501;
 	var BAD_GATEWAY = 502;
 	var SERVICE_UNAVAILABLE = 503;

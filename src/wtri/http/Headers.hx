@@ -1,3 +1,3 @@
 package wtri.http;
 
-typedef Headers = Map<HeaderName,String>;
+typedef Headers = Map<HeaderName, String>;
