@@ -70,15 +70,12 @@ private function main() {
 
 	var handlers:Array<wtri.Handler> = [
 		// wsHandler,
-		#if neko
-		// new wtri.handler.NekoHandler(),
-		#end
-		new wtri.handler.FileSystemHandler(root),
-		// new wtri.handler.ContentEncoding( ["deflate" => b -> return haxe.zip.Compress.run(b,9)] )
-		// new wtri.handler.ContentEncoding( ["deflate" => b -> return format.tools.Deflate.run(b)] )
+		new wtri.handler.FileSystemHandler(root, true),
+		new wtri.handler.ContentEncoding(["deflate" => b -> return haxe.zip.Compress.run(b,
+			9)]) // new wtri.handler.ContentEncoding(["deflate" => b -> return format.tools.Deflate.run(b)])
 	];
 
-	Sys.println('Starting server http://$host:$port');
+	log('Starting server http://$host:$port');
 	server = new wtri.Server((req, res) -> {
 		// res.end( 'Hello!' );
 		/*
@@ -99,7 +96,13 @@ private function main() {
 				log('${req.method} - ${res.code} - ${req.path}');
 			}
 		}
-	}).listen(port, host, uv, maxConnections);
+	});
+	try {
+		server.listen(port, host, uv, maxConnections);
+	} catch (e) {
+		Sys.stderr().writeString(e.message);
+		Sys.exit(1);
+	}
 }
 
 function log(str:String) {
