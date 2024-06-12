@@ -5,9 +5,9 @@ class FileSystemHandler implements wtri.Handler {
 	public var mime:Map<String, String>;
 	public var indexFileNames:Array<String>;
 	public var indexFileTypes:Array<String>;
-	public var autoIndex = true;
+	public var autoIndex:Bool;
 
-	public function new(path:String, ?mime:Map<String, String>, ?indexFileNames:Array<String>, ?indexFileTypes:Array<String>, ?autoIndex = true) {
+	public function new(path:String, ?mime:Map<String, String>, ?indexFileNames:Array<String>, ?indexFileTypes:Array<String>, ?autoIndex = false) {
 		this.path = FileSystem.fullPath(path.trim()).removeTrailingSlashes();
 		this.mime = mime ?? [
 			"css" => TextCss, "gif" => ImageGif, "html" => TextHtml, "ico" => "image/x-icon", "jpg" => ImageJpeg, "jpeg" => ImageJpeg, "js" => TextJavascript,
@@ -101,7 +101,7 @@ class FileSystemHandler implements wtri.Handler {
 		for (e in directories) {
 			final lp = reqPath.removeTrailingSlashes() + '/' + e;
 			final stat = FileSystem.stat('$path/$e');
-			html += '<tr><td><a href="$lp">$e</a></td><td>${stat.mtime}</td><td>-</td></tr>';
+			html += '<tr><td><a href="$lp/">$e</a></td><td>${stat.mtime}</td><td>-</td></tr>';
 		}
 		for (e in files) {
 			final lp = reqPath.removeTrailingSlashes() + '/' + e;
