@@ -10,9 +10,22 @@ class FileSystemHandler implements wtri.Handler {
 	public function new(path:String, ?mime:Map<String, String>, ?indexFileNames:Array<String>, ?indexFileTypes:Array<String>, ?autoIndex = false) {
 		this.path = FileSystem.fullPath(path.trim()).removeTrailingSlashes();
 		this.mime = mime ?? [
-			"css" => TextCss, "gif" => ImageGif, "html" => TextHtml, "ico" => "image/x-icon", "jpg" => ImageJpeg, "jpeg" => ImageJpeg, "js" => TextJavascript,
-			"json" => ApplicationJson, "png" => ImagePng, "svg" => "image/svg+xml", "txt" => TextPlain, "wasm" => "application/wasm", "webp" => ImageWebp,
-			"woff" => "font/woff", "woff2" => "font/woff2", "xml" => ApplicationXml,
+			"css" => TextCss,
+			"gif" => ImageGif,
+			"html" => TextHtml,
+			"ico" => "image/x-icon",
+			"jpg" => ImageJpeg,
+			"jpeg" => ImageJpeg,
+			"js" => TextJavascript,
+			"json" => ApplicationJson,
+			"png" => ImagePng,
+			"svg" => "image/svg+xml",
+			"txt" => TextPlain,
+			"wasm" => "application/wasm",
+			"webp" => ImageWebp,
+			"woff" => "font/woff",
+			"woff2" => "font/woff2",
+			"xml" => ApplicationXml,
 		];
 		this.indexFileNames = indexFileNames ?? ["index"];
 		this.indexFileTypes = indexFileTypes ?? ["html", "htm"];
