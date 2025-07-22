@@ -10,7 +10,8 @@ private function main() {
 	var port = 8080;
 	var root:String = null;
 	var quiet = false;
-	var uv = false;
+	var deflate = 0;
+	var uv = true;
 	var maxConnections = 20;
 
 	var usage:String = null;
@@ -25,7 +26,8 @@ private function main() {
 			if (!FileSystem.exists(path) || !FileSystem.isDirectory(path))
 				exit('Root path not found');
 			root = path;
-		},
+		}, @doc("Deflate")
+		["--deflate"] => (level:Int) -> deflate = level,
 		#if hl
 		@doc("Use libuv") ["--uv"] => (connections:Int) -> {
 			maxConnections = connections;
@@ -71,9 +73,12 @@ private function main() {
 	var handlers:Array<wtri.Handler> = [
 		// wsHandler,
 		new wtri.handler.FileSystemHandler(root, true),
-		new wtri.handler.ContentEncoding(["deflate" => b -> return haxe.zip.Compress.run(b,
-			9)]) // new wtri.handler.ContentEncoding(["deflate" => b -> return format.tools.Deflate.run(b)])
 	];
+	if (deflate > 0) {
+		var d = new wtri.handler.ContentEncoding(["deflate" => b -> return haxe.zip.Compress.run(b, deflate)]);
+		// var d = new wtri.handler.ContentEncoding(["deflate" => b -> return format.tools.Deflate.run(b)])
+		handlers.push(d);
+	}
 
 	log('Starting server http://$host:$port');
 	server = new wtri.Server((req, res) -> {
