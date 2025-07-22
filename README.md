@@ -41,6 +41,7 @@ Usage: wtri [options]
 [--host] <name>      : Address to bind
 [--port] <number>    : Port to bind
 [--root] <path>      : Filesystem root
+[--deflate] <level>  : Deflate
 [--uv] <connections> : Use libuv
 [--quiet]            : Disable logging to stdout
 [--help]             : Print this help

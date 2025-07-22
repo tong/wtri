@@ -1,3 +1,5 @@
 -main Main
 -lib wtri
 -lib hxargs
+-dce full
+-D analyzer-optimize
