@@ -3,6 +3,8 @@ lib/
 out/
 php/
 test/
+nginx.conf
+*.[0-9].*
 _*
 *.hl
 *.hdll
