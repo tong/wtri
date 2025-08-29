@@ -46,8 +46,9 @@ class FileSystemHandler implements wtri.Handler {
 		if (filePath == null) {
 			if (autoIndex && FileSystem.isDirectory(path)) {
 				final html = createAutoIndex(path, req.path);
+				final data:Data = Bytes.ofString(html);
 				res.headers.set(Content_Type, "text/html");
-				res.headers.set(Content_Length, Std.string(html.length));
+				res.headers.set(Content_Length, Std.string(data.length));
 				// res.end(OK, html);
 				res.data = html;
 			} else {
@@ -92,41 +93,54 @@ class FileSystemHandler implements wtri.Handler {
 		final directories:Array<String> = [];
 		final files:Array<String> = [];
 		for (e in FileSystem.readDirectory(path))
-			FileSystem.isDirectory('$path/$e') ? directories.push(e) : files.push(e);
-		function sort(a:String, b:String)
+			FileSystem.isDirectory(Path.join([path, e])) ? directories.push(e) : files.push(e);
+
+		function sort(a:String, b:String) {
+			a = a.toLowerCase();
+			b = b.toLowerCase();
 			return a > b ? 1 : a < b ? -1 : 0;
+		}
 		directories.sort(sort);
 		files.sort(sort);
+
 		final html = new StringBuf();
-		html.add("<html><title>Index of ");
-		html.add(reqPath);
-		html.add("</title><body><pre><table>");
-		function addEntry(e:String):sys.FileStat {
-			final lp = Path.join([reqPath, e]);
-			var stat:sys.FileStat = null;
-			try
-				stat = FileSystem.stat('$path/$e')
-			catch (e)
-				return null;
-			html.add('<tr><td><a href="');
-			html.add(lp);
-			html.add('/">');
-			html.add(e);
-			html.add("</a></td><td>");
-			html.add(stat.mtime);
-			return stat;
-		}
-		var stat:sys.FileStat = null;
-		for (e in directories)
-			if ((stat = addEntry(e)) != null)
-				html.add("</td><td>-</td></tr>");
-		for (e in files)
-			if ((stat = addEntry(e)) != null) {
-				html.add("</td><td>-</td><td>");
-				html.add(stat.size);
-				html.add("</td></tr>");
+		final title = StringTools.htmlEscape(reqPath);
+		html.add('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Index of $title</title></head><body>');
+		html.add('<h1>Index of $title</h1>');
+		html.add('<hr>');
+		html.add('<table>');
+		html.add('<tr><th align="left">Name</th><th align="left">Last Modified</th><th align="left">Size</th></tr>');
+		html.add('<tr><td><a href="../">../</a></td><td></td><td></td></tr>');
+		for (dir in directories) {
+			try {
+				final stat = FileSystem.stat(Path.join([path, dir]));
+				final href = Path.normalize(Path.join([reqPath, StringTools.urlEncode(dir)]));
+				html.add('<tr>');
+				html.add('<td><a href="${href}/">${StringTools.htmlEscape(dir)}/</a></td>');
+				html.add('<td>${stat.mtime}</td>');
+				html.add('<td>-</td>');
+				html.add('</tr>');
+			} catch (e:Any) {
+				// Could be a permissions error, skip file.
 			}
-		html.add("</pre></table></body></html>");
+		}
+		for (file in files) {
+			try {
+				final stat = FileSystem.stat(Path.join([path, file]));
+				final href = Path.normalize(Path.join([reqPath, StringTools.urlEncode(file)]));
+				html.add('<tr>');
+				html.add('<td><a href="${href}">${StringTools.htmlEscape(file)}</a></td>');
+				html.add('<td>${stat.mtime}</td>');
+				html.add('<td>${stat.size}</td>');
+				html.add('</tr>');
+			} catch (e:Any) {
+				// Could be a permissions error, skip file.
+			}
+		}
+		html.add('</table>');
+		html.add('<hr>');
+		html.add('</body>');
+		html.add('</html>');
 		return html.toString();
 	}
 }
