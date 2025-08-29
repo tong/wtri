@@ -19,21 +19,18 @@ private function main() {
 		["--host"] => (name:String) -> host = name, @doc("Port to bind")
 		["--port"] => (number:Int) -> {
 			if (number < 1 || number > 65535)
-				exit('Port number out of range');
+				exit(1, 'Port number out of range');
 			port = number;
 		}, @doc("File system root")
 		["--root"] => (path:String) -> {
 			if (!FileSystem.exists(path) || !FileSystem.isDirectory(path))
-				exit('Root path not found');
+				exit(1, 'Root path not found');
 			root = path;
 		}, @doc("Deflate")
-		["--deflate"] => (level:Int) -> deflate = level, @doc("Script")
-		["--hscript"] => () -> {
-			#if !hscript
-			exit("not built with hscript support");
-			#end
-			scripting = true;
-		},
+		["--deflate"] => (level:Int) -> deflate = level,
+		#if !hscript
+		@doc("Script") ["--hscript"] => () -> scripting = true,
+		#end
 		#if hl
 		@doc("Use libuv") ["--uv"] => (connections:Int) -> {
 			maxConnections = connections;

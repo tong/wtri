@@ -2,7 +2,7 @@
 
 Embeddable haxe/sys web server.
 
-## Embed
+## Usage
 
 ```hx
 new wtri.Server((req,res)-> {
@@ -11,17 +11,18 @@ new wtri.Server((req,res)-> {
 }).listen(8080);
 ```
 
-See: [Main.hx](https://github.com/tong/wtri/blob/master/src/Main.hx)
-
 ---
 
 ## Example server
+
+See: [Main.hx](https://github.com/tong/wtri/blob/master/src/Main.hx)
 
 ### Build
 
 ```sh
 git clone https://github.com/tong/wtri.git
 cd wtri/
+haxelib install haxelib.json
 haxelib dev wtri .
 
 haxe wtri.hxml -hl wtri.hl
