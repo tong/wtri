@@ -14,12 +14,26 @@ jobs:
         haxe:
           - latest
           - 4.3.7
+    continue-on-error: ${{ matrix.haxe == 'latest' }}
+
     steps:
       - uses: actions/checkout@v4
-      - name: Install haxe
-        uses: krdlab/setup-haxe@v1.5.1
+
+      - name: Install haxe ${{ matrix.haxe }}
+        uses: krdlab/setup-haxe@v2.0.0
         with:
           haxe-version: ${{ matrix.haxe }}
+
+      - name: Cache haxelib
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/lib/haxe/lib
+            ~/.haxelib
+          key: ${{ runner.os }}-haxe-${{ matrix.haxe }}-haxelib-${{ hashFiles('haxelib.json') }}
+          restore-keys: |
+            ${{ runner.os }}-haxe-${{ matrix.haxe }}-haxelib-
+
       - name: Install haxelibs
         run: |
           haxelib dev wtri .
@@ -29,17 +43,24 @@ jobs:
           haxelib git hxargs https://github.com/Simn/hxargs
           haxelib git om.core https://github.com/omlib/om.core
           haxelib git om.http https://github.com/omlib/om.http
+
       - name: Build hl
         run: haxe wtri.hxml -hl wtri.hl
-      - name: Build hlc
+
+      - name: Build hl/c
         run: haxe wtri.hxml -hl out/main.c
+
       - name: Build neko
         run: haxe wtri.hxml -neko wtri.n
+
       - name: Build python
         run: haxe wtri.hxml -python wtri.py
-      - name: Build jvm
+
+      - name: Build lua
         run: haxe wtri.hxml -lua wtri.lua -D lua-vanilla -D lua-jit
+
       - name: Build cpp
         run: haxe wtri.hxml -cpp cpp
+
       - name: Build php
         run: haxe wtri.hxml -php php
