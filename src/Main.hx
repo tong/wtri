@@ -1,5 +1,4 @@
 import hxargs.Args;
-import sys.FileSystem;
 import wtri.net.Socket;
 
 var server(default, null):wtri.Server;
@@ -10,8 +9,9 @@ private function main() {
 	var port = 8080;
 	var root:String = null;
 	var quiet = false;
-	var deflate = 0;
 	var uv = true;
+	var deflate = 0;
+	var scripting = false;
 	var maxConnections = 20;
 
 	var usage:String = null;
@@ -21,13 +21,19 @@ private function main() {
 			if (number < 1 || number > 65535)
 				exit('Port number out of range');
 			port = number;
-		}, @doc("Filesystem root")
+		}, @doc("File system root")
 		["--root"] => (path:String) -> {
 			if (!FileSystem.exists(path) || !FileSystem.isDirectory(path))
 				exit('Root path not found');
 			root = path;
 		}, @doc("Deflate")
-		["--deflate"] => (level:Int) -> deflate = level,
+		["--deflate"] => (level:Int) -> deflate = level, @doc("Script")
+		["--hscript"] => () -> {
+			#if !hscript
+			exit("not built with hscript support");
+			#end
+			scripting = true;
+		},
 		#if hl
 		@doc("Use libuv") ["--uv"] => (connections:Int) -> {
 			maxConnections = connections;
@@ -45,7 +51,7 @@ private function main() {
 	if (root == null)
 		root = Sys.getCwd();
 
-	wtri.Response.defaultHeaders.set('server', 'wtri');
+	wtri.Response.defaultHeaders.set("server", "wtri");
 
 	/*
 		var wsHandler = new wtri.handler.WebSocketHandler();
@@ -70,17 +76,29 @@ private function main() {
 		}
 	 */
 
-	var handlers:Array<wtri.Handler> = [
-		// wsHandler,
-		new wtri.handler.FileSystemHandler(root, true),
-	];
+	final handlers:Array<wtri.Handler> = [];
+
+	#if hscript
+	if (scripting) {
+		final hs = new wtri.handler.HScriptHandler(root);
+		hs.interp.variables.set("Bytes", Bytes);
+		hs.interp.variables.set("Date", Date);
+		hs.interp.variables.set("Math", Math);
+		hs.interp.variables.set("FileSystem", FileSystem);
+		// hs.interp.variables.set("File", File);
+		handlers.push(hs);
+	}
+	#end
+
+	// wsHandler,
+	handlers.push(new wtri.handler.FileSystemHandler(root, true));
+
 	if (deflate > 0) {
 		var d = new wtri.handler.ContentEncoding(["deflate" => b -> return haxe.zip.Compress.run(b, deflate)]);
 		// var d = new wtri.handler.ContentEncoding(["deflate" => b -> return format.tools.Deflate.run(b)])
 		handlers.push(d);
 	}
 
-	log('Starting server http://$host:$port');
 	server = new wtri.Server((req, res) -> {
 		// res.end( 'Hello!' );
 		/*
@@ -102,12 +120,13 @@ private function main() {
 			}
 		}
 	});
-	try {
-		server.listen(port, host, uv, maxConnections);
-	} catch (e) {
-		Sys.stderr().writeString(e.message);
-		Sys.exit(1);
-	}
+	log('Starting server http://$host:$port');
+	server.listen(port, host, uv, maxConnections);
+	// try {
+	//	server.listen(port, host, uv, maxConnections);
+	// } catch (e) {
+	//	Sys.stderr().writeString(e.message);
+	//	Sys.exit(1);
 }
 
 function log(str:String) {

@@ -1,5 +1,5 @@
-// import haxe.http.HttpStatus;
 import haxe.io.Bytes;
+import haxe.io.BytesBuffer;
 import haxe.io.BytesInput;
 import haxe.io.Mime;
 #if hl
