@@ -1,7 +1,6 @@
 package wtri;
 
 import wtri.http.Headers;
-import wtri.http.HeaderName;
 
 class Response {
 	public static var defaultHeaders:Headers = [];
@@ -20,13 +19,15 @@ class Response {
 	inline function get_socket():Socket
 		return request.socket;
 
-	public function new(request:Request, ?headers:Map<String, String>, protocol = "HTTP/1.1") {
+	public function new(request:Request, ?headers:Headers, protocol = "HTTP/1.1") {
 		this.request = request;
+		this.headers = headers ?? new Map();
 		this.protocol = protocol;
-		this.headers = (headers != null) ? headers : [];
 	}
 
 	public function writeHead(?code:StatusCode, ?extraHeaders:Headers) {
+		if (headersSent)
+			return;
 		if (code != null)
 			this.code = code;
 		writeLine('${protocol} ${this.code} ' + StatusMessage.fromStatusCode(this.code));
@@ -63,18 +64,21 @@ class Response {
 		if (data != null)
 			this.data = data;
 		if (!headersSent) {
-			var extraHeaders = new Map<String, String>();
+			// var extraHeaders = new Map<String, String>();
+			// if (this.data != null && !this.headers.exists(Content_Length)) {
+			//	extraHeaders.set(Content_Length, Std.string(this.data.length));
+			// }
+			// writeHead(this.code, extraHeaders);
 			if (this.data != null && !this.headers.exists(Content_Length)) {
-				extraHeaders.set(Content_Length, Std.string(this.data.length));
+				headers.set(Content_Length, Std.string(this.data.length));
 			}
-			writeHead(this.code, extraHeaders);
+			writeHead(this.code);
 		}
 		if (this.data != null)
 			socket.write(this.data);
 		finished = true;
 	}
 
-	inline function writeLine(line:Data) {
+	inline function writeLine(line:String)
 		socket.write('$line\r\n');
-	}
 }
