@@ -1,115 +1,514 @@
 package wtri.http;
 
+/**
+	Represents the status code component of an HTTP response.
+	It is a 3-digit integer code indicating the result of the server's attempt to understand and satisfy the request.
+
+	@see https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+**/
 enum abstract StatusCode(Int) from Int to Int {
-	// --- 1xx Informational - Request received, continuing process
+	// --- 1xx Informational ---
+	// The request was received, continuing process.
 
 	/**
-		The server has received the request headers and the client should proceed to send the request body
+	 * **100 Continue**
+	 *
+	 * This interim response indicates that everything so far is OK and that the
+	 * client should continue the request, or ignore the response if the request
+	 * is already finished.
 	 */
 	var CONTINUE = 100;
 
 	/**
-		The requester has asked the server to switch protocols and the server has agreed to do so
+	 * **101 Switching Protocols**
+	 *
+	 * This code is sent in response to an `Upgrade` request header from the client,
+	 * and indicates the protocol the server is switching to.
 	 */
 	var SWITCHING_PROTOCOL = 101;
 
+	/**
+	 * **102 Processing (WebDAV)**
+	 *
+	 * This code indicates that the server has received and is processing the request,
+	 * but no response is available yet.
+	 */
 	var PROCESSING = 102;
+
+	/**
+	 * **103 Early Hints**
+	 *
+	 * This status code is primarily intended to be used with the `Link` header,
+	 * letting the user agent start preloading resources while the server prepares a response.
+	 */
 	var EARLY_HINTS = 103;
 
-	// --- 2xx Success - The action was successfully received, understood, and accepted
+	// --- 2xx Success ---
+	// The action was successfully received, understood, and accepted.
+
+	/**
+	 * **200 OK**
+	 *
+	 * The request has succeeded.
+	 */
 	var OK = 200;
+
+	/**
+	 * **201 Created**
+	 *
+	 * The request has succeeded and a new resource has been created as a result.
+	 */
 	var CREATED = 201;
+
+	/**
+	 * **202 Accepted**
+	 *
+	 * The request has been received but not yet acted upon.
+	 */
 	var ACCEPTED = 202;
+
+	/**
+	 * **203 Non-Authoritative Information**
+	 *
+	 * The returned meta-information is not exactly the same as is available from the origin server,
+	 * but is collected from a local or a third-party copy.
+	 */
 	var NON_AUTORITATIVE_INFORMATION = 203;
+
+	/**
+	 * **204 No Content**
+	 *
+	 * There is no content to send for this request, but the headers may be useful.
+	 */
 	var NO_CONTENT = 204;
+
+	/**
+	 * **205 Reset Content**
+	 *
+	 * Tells the user-agent to reset the document which sent this request.
+	 */
 	var RESET_CONTENT = 205;
+
+	/**
+	 * **206 Partial Content**
+	 *
+	 * This response code is used when the `Range` header is sent from the client
+	 * to request only part of a resource.
+	 */
 	var PARTIAL_CONTENT = 206;
+
+	/**
+	 * **207 Multi-Status (WebDAV)**
+	 *
+	 * Conveys information about multiple resources, for situations where multiple status codes might be appropriate.
+	 */
 	var MULTI_STATUS = 207;
+
+	/**
+	 * **208 Already Reported (WebDAV)**
+	 *
+	 * Used inside a `<dav:propstat>` response element to avoid repeatedly enumerating the internal members of multiple bindings to the same collection.
+	 */
 	var ALREADY_REPORTED = 208;
 
+	/**
+	 * **226 IM Used (HTTP Delta encoding)**
+	 *
+	 * The server has fulfilled a `GET` request for the resource, and the response is a representation of the result of one or more instance-manipulations applied to the current instance.
+	 */
 	var IM_USED = 226;
 
-	var LOW_ON_STORAGE_SPACE = 250;
+	// --- 3xx Redirection ---
+	// Further action must be taken in order to complete the request.
 
-	// --- 3xx Redirection - Further action must be taken in order to complete the request
+	/**
+	 * **300 Multiple Choices**
+	 *
+	 * The request has more than one possible response.
+	 */
 	var MULTIPLE_CHOICE = 300;
+
+	/**
+	 * **301 Moved Permanently**
+	 *
+	 * The URL of the requested resource has been changed permanently.
+	 */
 	var MOVED_PERMANENTLY = 301;
+
+	/**
+	 * **302 Found**
+	 *
+	 * This response code means that the URI of the requested resource has been changed temporarily.
+	 */
 	var FOUND = 302;
+
+	/**
+	 * **303 See Other**
+	 *
+	 * The server sent this response to direct the client to get the requested resource
+	 * at another URI with a GET request.
+	 */
 	var SEE_OTHER = 303;
+
+	/**
+	 * **304 Not Modified**
+	 *
+	 * This is used for caching purposes. It tells the client that the response has not been modified,
+	 * so the client can continue to use the same cached version of the response.
+	 */
 	var NOT_MODIFIED = 304;
+
+	/**
+	 * **305 Use Proxy**
+	 *
+	 * Was defined in a previous version of the HTTP specification to indicate that a requested response
+	 * must be accessed by a proxy. It has been deprecated due to security concerns regarding in-band configuration of a proxy.
+	 */
 	var USE_PROXY = 305;
+
+	/**
+	 * **306 Switch Proxy**
+	 *
+	 * This response code is no longer used.
+	 */
 	var SWITCH_PROXY = 306;
+
+	/**
+	 * **307 Temporary Redirect**
+	 *
+	 * The server sends this response to direct the client to get the requested resource
+	 * at another URI with same method that was used in the prior request.
+	 */
 	var TEMPORARY_REDIRECT = 307;
+
+	/**
+	 * **308 Permanent Redirect**
+	 *
+	 * This means that the resource is now permanently located at another URI,
+	 * specified by the `Location:` HTTP Response header.
+	 */
 	var PERMANENT_REDIRECT = 308;
 
-	// --- 4xx Client Error - The request contains bad syntax or cannot be fulfilled
+	// --- 4xx Client Error ---
+	// The request contains bad syntax or cannot be fulfilled.
+
+	/**
+	 * **400 Bad Request**
+	 *
+	 * The server could not understand the request due to invalid syntax.
+	 */
 	var BAD_REQUEST = 400;
+
+	/**
+	 * **401 Unauthorized**
+	 *
+	 * Although the HTTP standard specifies "unauthorized", semantically this response means "unauthenticated".
+	 * That is, the client must authenticate itself to get the requested response.
+	 */
 	var UNAUTHORIZED = 401;
+
+	/**
+	 * **402 Payment Required**
+	 *
+	 * This response code is reserved for future use.
+	 */
 	var PAYMENT_REQUIRED = 402;
+
+	/**
+	 * **403 Forbidden**
+	 *
+	 * The client does not have access rights to the content.
+	 */
 	var FORBIDDEN = 403;
 
 	/**
-		The requested resource could not be found but may be available in the future.
-		Subsequent requests by the client are permissible.
+	 * **404 Not Found**
+	 *
+	 * The server can not find the requested resource.
 	 */
 	var NOT_FOUND = 404;
 
+	/**
+	 * **405 Method Not Allowed**
+	 *
+	 * The request method is known by the server but has been disabled and cannot be used.
+	 */
 	var METHOD_NOT_ALLOWED = 405;
-	var NOT_ACCEPTABLE = 406;
-	var PROXY_AUTHENTICATION_REQUIRED = 407;
-	var REQUEST_TIMEOUT = 408;
-	var CONFLICT = 409;
-	var GONE = 410;
-	var LENGTH_REQUIRED = 411;
-	var PRECONDITION_FAILED = 412;
-
-	var REQUEST_ENTITY_TOO_LARGE = 413;
-	var REQUEST_URI_TOO_LARGE = 414;
-	var UNSUPPORTED_MEDIA_TYPE = 415;
-	var REQUEST_RANGE_NOT_SATISFIABLE = 416;
-	var EXPECTATION_FAILED = 417;
-	var I_AM_A_TEAPOT = 418;
-	var AUTHENTICATION_TIMEOUT = 419;
-	var METHOD_FAILURE = 420;
-	var ENHANCE_YOUR_CALM = 420;
-	var UNPROCESSABLE_ENTITY = 422;
-	var LOCKED = 423;
-	var FAILED_DEPENDENCY = 424;
-	// var METHOD_FAILURE = 424;
-	var UNORDERED_COLLECTION = 425;
-	var UPGRADE_REQUIRED = 426;
-	var PRECONDITION_REQUIRED = 428;
-	var TOO_MANY_REQUESTS = 429;
-	var REQUEST_HEADER_FIELDS_TOO_LARGE = 431;
-	var NO_RESPONSE = 444;
-	var RETRY_WITH = 449;
-	var BLOCKED_BY_WINDOWS_PARENTAL_CONTROLS = 450;
-	var UNAVAILABLE_FOR_LEGAL_REASONS = 451;
-	var REDIRECT = 451;
-	var REQUEST_HEADER_TOO_LARGE = 494;
-	var CERT_ERROR = 495;
-	var NO_CERT = 496;
-	var HTTP_TO_HTTPS = 497;
-	var CLIENT_CLOSED_REQUEST = 499;
-
-	// --- 5xx Server Error - The server failed to fulfill an apparently valid request
 
 	/**
-		The server either does not recognize the request method, or it lacks the ability to fulfil the request
+	 * **406 Not Acceptable**
+	 *
+	 * This response is sent when the web server, after performing server-driven content negotiation,
+	 * doesn't find any content that conforms to the criteria given by the user agent.
+	 */
+	var NOT_ACCEPTABLE = 406;
+
+	/**
+	 * **407 Proxy Authentication Required**
+	 *
+	 * This is similar to 401 but authentication is needed to be done by a proxy.
+	 */
+	var PROXY_AUTHENTICATION_REQUIRED = 407;
+
+	/**
+	 * **408 Request Timeout**
+	 *
+	 * This response is sent on an idle connection by some servers,
+	 * even without any previous request by the client.
+	 */
+	var REQUEST_TIMEOUT = 408;
+
+	/**
+	 * **409 Conflict**
+	 *
+	 * This response is sent when a request conflicts with the current state of the server.
+	 */
+	var CONFLICT = 409;
+
+	/**
+	 * **410 Gone**
+	 *
+	 * This response is sent when the requested content has been permanently deleted from server,
+	 * with no forwarding address.
+	 */
+	var GONE = 410;
+
+	/**
+	 * **411 Length Required**
+	 *
+	 * Server rejected the request because the `Content-Length` header field is not defined and the server requires it.
+	 */
+	var LENGTH_REQUIRED = 411;
+
+	/**
+	 * **412 Precondition Failed**
+	 *
+	 * The client has indicated preconditions in its headers which the server does not meet.
+	 */
+	var PRECONDITION_FAILED = 412;
+
+	/**
+	 * **413 Payload Too Large**
+	 *
+	 * Request entity is larger than limits defined by server.
+	 */
+	var REQUEST_ENTITY_TOO_LARGE = 413;
+
+	/**
+	 * **414 URI Too Long**
+	 *
+	 * The URI requested by the client is longer than the server is willing to interpret.
+	 */
+	var REQUEST_URI_TOO_LARGE = 414;
+
+	/**
+	 * **415 Unsupported Media Type**
+	 *
+	 * The media format of the requested data is not supported by the server,
+	 * so the server is rejecting the request.
+	 */
+	var UNSUPPORTED_MEDIA_TYPE = 415;
+
+	/**
+	 * **416 Range Not Satisfiable**
+	 *
+	 * The range specified by the `Range` header field in the request can't be fulfilled.
+	 */
+	var REQUEST_RANGE_NOT_SATISFIABLE = 416;
+
+	/**
+	 * **417 Expectation Failed**
+	 *
+	 * This response code means the expectation indicated by the `Expect` request header field
+	 * could not be met by the server.
+	 */
+	var EXPECTATION_FAILED = 417;
+
+	/**
+	 * **418 I'm a teapot**
+	 *
+	 * The server refuses the attempt to brew coffee with a teapot.
+	 */
+	var I_AM_A_TEAPOT = 418;
+
+	/**
+	 * **421 Misdirected Request**
+	 *
+	 * The request was directed at a server that is not able to produce a response.
+	 */
+	var MISDIRECTED_REQUEST = 421;
+
+	/**
+	 * **422 Unprocessable Entity (WebDAV)**
+	 *
+	 * The request was well-formed but was unable to be followed due to semantic errors.
+	 */
+	var UNPROCESSABLE_ENTITY = 422;
+
+	/**
+	 * **423 Locked (WebDAV)**
+	 *
+	 * The resource that is being accessed is locked.
+	 */
+	var LOCKED = 423;
+
+	/**
+	 * **424 Failed Dependency (WebDAV)**
+	 *
+	 * The request failed due to failure of a previous request.
+	 */
+	var FAILED_DEPENDENCY = 424;
+
+	/**
+	 * **425 Too Early**
+	 *
+	 * Indicates that the server is unwilling to risk processing a request that might be replayed.
+	 */
+	var TOO_EARLY = 425;
+
+	/**
+	 * **426 Upgrade Required**
+	 *
+	 * The server refuses to perform the request using the current protocol but might be willing to do so after the client upgrades to a different protocol.
+	 */
+	var UPGRADE_REQUIRED = 426;
+
+	/**
+	 * **428 Precondition Required**
+	 *
+	 * The origin server requires the request to be conditional.
+	 */
+	var PRECONDITION_REQUIRED = 428;
+
+	/**
+	 * **429 Too Many Requests**
+	 *
+	 * The user has sent too many requests in a given amount of time ("rate limiting").
+	 */
+	var TOO_MANY_REQUESTS = 429;
+
+	/**
+	 * **431 Request Header Fields Too Large**
+	 *
+	 * The server is unwilling to process the request because its header fields are too large.
+	 */
+	var REQUEST_HEADER_FIELDS_TOO_LARGE = 431;
+
+	/**
+	 * **451 Unavailable For Legal Reasons**
+	 *
+	 * The user-agent requested a resource that cannot legally be provided, such as a web page censored by a government.
+	 */
+	var UNAVAILABLE_FOR_LEGAL_REASONS = 451;
+
+	// --- 5xx Server Error ---
+	// The server failed to fulfill an apparently valid request.
+
+	/**
+	 * **500 Internal Server Error**
+	 *
+	 * The server has encountered a situation it doesn't know how to handle.
 	 */
 	var INTERNAL_SERVER_ERROR = 500;
 
+	/**
+	 * **501 Not Implemented**
+	 *
+	 * The request method is not supported by the server and cannot be handled.
+	 */
 	var NOT_IMPLEMENTED = 501;
+
+	/**
+	 * **502 Bad Gateway**
+	 *
+	 * This error response means that the server, while working as a gateway to get a response needed to handle the request,
+	 * got an invalid response.
+	 */
 	var BAD_GATEWAY = 502;
+
+	/**
+	 * **503 Service Unavailable**
+	 *
+	 * The server is not ready to handle the request.
+	 */
 	var SERVICE_UNAVAILABLE = 503;
+
+	/**
+	 * **504 Gateway Timeout**
+	 *
+	 * This error response is given when the server is acting as a gateway and cannot get a response in time.
+	 */
 	var GATEWAY_TIMEOUT = 504;
+
+	/**
+	 * **505 HTTP Version Not Supported**
+	 *
+	 * The HTTP version used in the request is not supported by the server.
+	 */
 	var HTTP_VERSION_NOT_SUPPORTED = 505;
+
+	/**
+	 * **506 Variant Also Negotiates**
+	 *
+	 * The server has an internal configuration error: the chosen variant resource is configured to engage in transparent content negotiation itself, and is therefore not a proper endpoint in the negotiation process.
+	 */
 	var VARIANT_ALSO_NEGOTIATES = 506;
-	var INSUFFICIENTS_STORAGE = 507;
+
+	/**
+	 * **507 Insufficient Storage (WebDAV)**
+	 *
+	 * The method could not be performed on the resource because the server is unable to store the representation needed to successfully complete the request.
+	 */
+	var INSUFFICIENT_STORAGE = 507;
+
+	/**
+	 * **508 Loop Detected (WebDAV)**
+	 *
+	 * The server detected an infinite loop while processing the request.
+	 */
 	var LOOP_DETECTED = 508;
-	var BANDWITH_LIMIT_EXCEEDED = 509;
+
+	/**
+	 * **510 Not Extended**
+	 *
+	 * Further extensions to the request are required for the server to fulfill it.
+	 */
 	var NOT_EXTENDED = 510;
+
+	/**
+	 * **511 Network Authentication Required**
+	 *
+	 * The client needs to authenticate to gain network access.
+	 */
 	var NETWORK_AUTHENTICATION_REQUIRED = 511;
-	var NETWORK_READ_TIMEOUT_ERROR = 598;
-	var NETWORK_CONNECT_TIMEOUT_ERROR = 599;
+
+	// --- Non-standard codes ---
+
+	/**
+	 * **420 Enhance Your Calm (Twitter)**
+	 *
+	 * A non-standard status code returned by Twitter for rate-limiting.
+	 */
+	var ENHANCE_YOUR_CALM = 420;
+
+	/**
+	 * **450 Blocked by Windows Parental Controls (Microsoft)**
+	 *
+	 * A non-standard status code from Microsoft.
+	 */
+	var BLOCKED_BY_WINDOWS_PARENTAL_CONTROLS = 450;
+
+	/**
+	 * **499 Client Closed Request (Nginx)**
+	 *
+	 * A non-standard status code from Nginx used when the client closes the connection before the server has sent a response.
+	 */
+	var CLIENT_CLOSED_REQUEST = 499;
+
+	/**
+	 * **509 Bandwidth Limit Exceeded (Apache)**
+	 *
+	 * A non-standard status code from Apache.
+	 */
+	var BANDWIDTH_LIMIT_EXCEEDED = 509;
 }
