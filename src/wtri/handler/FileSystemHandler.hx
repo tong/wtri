@@ -89,10 +89,9 @@ class FileSystemHandler implements wtri.Handler {
 	}
 
 	function createAutoIndex(path:String, reqPath:String):String {
-		final entries = FileSystem.readDirectory(path);
-		final directories = new Array<String>();
-		final files = new Array<String>();
-		for (e in entries)
+		final directories:Array<String> = [];
+		final files:Array<String> = [];
+		for (e in FileSystem.readDirectory(path))
 			FileSystem.isDirectory('$path/$e') ? directories.push(e) : files.push(e);
 		function sort(a:String, b:String)
 			return a > b ? 1 : a < b ? -1 : 0;
@@ -102,30 +101,31 @@ class FileSystemHandler implements wtri.Handler {
 		html.add("<html><title>Index of ");
 		html.add(reqPath);
 		html.add("</title><body><pre><table>");
-		for (e in directories) {
+		function addEntry(e:String):sys.FileStat {
 			final lp = Path.join([reqPath, e]);
-			final stat = FileSystem.stat('$path/$e');
+			var stat:sys.FileStat = null;
+			try
+				stat = FileSystem.stat('$path/$e')
+			catch (e)
+				return null;
 			html.add('<tr><td><a href="');
 			html.add(lp);
 			html.add('/">');
 			html.add(e);
 			html.add("</a></td><td>");
 			html.add(stat.mtime);
-			html.add("</td><td>-</td></tr>");
+			return stat;
 		}
-		for (e in files) {
-			final lp = Path.join([reqPath, e]);
-			final stat = FileSystem.stat('$path/$e');
-			html.add('<tr><td><a href="');
-			html.add(lp);
-			html.add('/">');
-			html.add(e);
-			html.add("</a></td><td>");
-			html.add(stat.mtime);
-			html.add("</td><td>-</td><td>");
-			html.add(stat.size);
-			html.add("</td></tr>");
-		}
+		var stat:sys.FileStat = null;
+		for (e in directories)
+			if ((stat = addEntry(e)) != null)
+				html.add("</td><td>-</td></tr>");
+		for (e in files)
+			if ((stat = addEntry(e)) != null) {
+				html.add("</td><td>-</td><td>");
+				html.add(stat.size);
+				html.add("</td></tr>");
+			}
 		html.add("</pre></table></body></html>");
 		return html.toString();
 	}
