@@ -1,5 +1,8 @@
--main Main
+-main Wtri
 -lib wtri
 -lib hxargs
 -dce full
 -D analyzer-optimize
+
+-lib hscript
+-D hscriptPos

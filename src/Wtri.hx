@@ -1,9 +1,9 @@
-import hxargs.Args;
 import wtri.net.Socket;
 
 var server(default, null):wtri.Server;
 var startTime = Sys.time();
 
+#if !eval
 private function main() {
 	var host = "localhost";
 	var port = 8080;
@@ -15,7 +15,7 @@ private function main() {
 	var maxConnections = 20;
 
 	var usage:String = null;
-	var argHandler = Args.generate([@doc("Address to bind")
+	var argHandler = hxargs.Args.generate([@doc("Address to bind")
 		["--host"] => (name:String) -> host = name, @doc("Port to bind")
 		["--port"] => (number:Int) -> {
 			if (number < 1 || number > 65535)
@@ -46,10 +46,32 @@ private function main() {
 	usage = 'Usage: wtri [options]\n\n' + argHandler.getDoc();
 	argHandler.parse(Sys.args());
 
+	start(host, port, root, deflate, scripting, quiet, uv, maxConnections);
+}
+#end // !eval
+function start(host = "localhost", port = 8080, ?root:String, deflate = 0, scripting = false, quiet = false, uv = false, maxConnections = 20) {
 	if (root == null)
 		root = Sys.getCwd();
+	else {
+		if (!FileSystem.exists(root))
+			exit(1, 'root not found: $root');
+	}
 
 	wtri.Response.defaultHeaders.set("server", "wtri");
+
+	final handlers:Array<wtri.Handler> = [];
+
+	#if hscript
+	if (scripting) {
+		final hs = new wtri.handler.HScriptHandler(root);
+		hs.interp.variables.set("Bytes", Bytes);
+		hs.interp.variables.set("Date", Date);
+		hs.interp.variables.set("Math", Math);
+		hs.interp.variables.set("FileSystem", FileSystem);
+		// hs.interp.variables.set("File", File);
+		handlers.push(hs);
+	}
+	#end
 
 	/*
 		var wsHandler = new wtri.handler.WebSocketHandler();
@@ -73,20 +95,6 @@ private function main() {
 			client.write("Welcome!");
 		}
 	 */
-
-	final handlers:Array<wtri.Handler> = [];
-
-	#if hscript
-	if (scripting) {
-		final hs = new wtri.handler.HScriptHandler(root);
-		hs.interp.variables.set("Bytes", Bytes);
-		hs.interp.variables.set("Date", Date);
-		hs.interp.variables.set("Math", Math);
-		hs.interp.variables.set("FileSystem", FileSystem);
-		// hs.interp.variables.set("File", File);
-		handlers.push(hs);
-	}
-	#end
 
 	// wsHandler,
 	handlers.push(new wtri.handler.FileSystemHandler(root, true));
@@ -120,7 +128,7 @@ private function main() {
 }
 
 function log(str:String) {
-	Sys.stdout().writeString(Date.now().toString() + ' - $str\n');
+	Sys.println('${Date.now().toString()} - $str');
 }
 
 function exit(code = 0, ?msg:String) {
