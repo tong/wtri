@@ -16,7 +16,7 @@ class ContentEncoding implements wtri.Handler {
 		for (k in encoders.keys()) {
 			if (enc.indexOf(k) != -1) {
 				res.data = encoders.get(k)(res.data);
-				res.headers.set(Content_Encoding, 'deflate');
+				res.headers.set(Content_Encoding, k);
 				return true;
 			}
 		}
