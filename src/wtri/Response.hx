@@ -9,22 +9,22 @@ class Response {
 	public final request:Request;
 	public final protocol:String;
 
-	public var code:StatusCode = OK;
-	public var headers:Headers;
+	public var socket(get, never):Socket;
 	public var headersSent(default, null) = false;
 	public var finished(default, null) = false;
-	public var data:Data;
 
-	public var socket(get, never):Socket;
-
-	inline function get_socket():Socket
-		return request.socket;
+	public var code:StatusCode = OK;
+	public var headers:Headers;
+	public var data:Bytes;
 
 	public function new(request:Request, ?headers:Headers, protocol = "HTTP/1.1") {
 		this.request = request;
 		this.headers = headers ?? new Map();
 		this.protocol = protocol;
 	}
+
+	inline function get_socket():Socket
+		return request.socket;
 
 	public function writeHead(?code:StatusCode, ?extraHeaders:Headers) {
 		if (headersSent)
@@ -44,7 +44,7 @@ class Response {
 		headersSent = true;
 	}
 
-	public inline function write(data:Data) {
+	public inline function write(data:Bytes) {
 		socket.write(data);
 	}
 
@@ -57,7 +57,7 @@ class Response {
 		end();
 	}
 
-	public function end(?code:StatusCode, ?data:Data) {
+	public function end(?code:StatusCode, ?data:Bytes) {
 		if (finished)
 			return;
 		if (code != null)
@@ -81,7 +81,7 @@ class Response {
 	}
 
 	inline function writeLine(line:String)
-		socket.write('$line\r\n');
+		socket.write(Bytes.ofString('$line\r\n'));
 
 	public function toString()
 		return '${request.method} ${request.path} ${code}';

@@ -46,11 +46,11 @@ class FileSystemHandler implements wtri.Handler {
 		if (filePath == null) {
 			if (autoIndex && FileSystem.isDirectory(path)) {
 				final html = createAutoIndex(path, req.path);
-				final data:Data = Bytes.ofString(html);
+				final data = Bytes.ofString(html);
 				res.headers.set(Content_Type, "text/html");
 				res.headers.set(Content_Length, Std.string(data.length));
 				// res.end(OK, html);
-				res.data = html;
+				res.data = data;
 			} else {
 				// res.end(NOT_FOUND, Bytes.ofString(NOT_FOUND));
 				res.code = NOT_FOUND;
@@ -108,6 +108,7 @@ class FileSystemHandler implements wtri.Handler {
 		html.add('<!DOCTYPE html><html><head><meta charset="utf-8"><title>Index of $title</title></head><body>');
 		html.add('<h1>Index of $title</h1>');
 		html.add('<hr>');
+		html.add('<pre>');
 		html.add('<table>');
 		html.add('<tr><th align="left">Name</th><th align="left">Last Modified</th><th align="left">Size</th></tr>');
 		html.add('<tr><td><a href="../">../</a></td><td></td><td></td></tr>');
@@ -138,6 +139,7 @@ class FileSystemHandler implements wtri.Handler {
 			}
 		}
 		html.add('</table>');
+		html.add('</pre>');
 		html.add('<hr>');
 		html.add('</body>');
 		html.add('</html>');
