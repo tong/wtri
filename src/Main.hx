@@ -9,7 +9,7 @@ private function main() {
 	var port = 8080;
 	var root:String = null;
 	var quiet = false;
-	var uv = true;
+	var uv = false;
 	var deflate = 0;
 	var scripting = false;
 	var maxConnections = 20;
@@ -28,14 +28,14 @@ private function main() {
 			root = path;
 		}, @doc("Deflate")
 		["--deflate"] => (level:Int) -> deflate = level,
-		#if !hscript
-		@doc("Script") ["--hscript"] => () -> scripting = true,
-		#end
 		#if hl
-		@doc("Use libuv") ["--uv"] => (connections:Int) -> {
+		@doc("Use libuv (hl)") ["--uv"] => (connections:Int) -> {
 			maxConnections = connections;
 			uv = true;
 		},
+		#end
+		#if hscript
+		@doc("Script") ["--hscript"] => () -> scripting = true,
 		#end
 		@doc("Disable logging to stdout")
 		["--quiet"] => () -> quiet = true, @doc("Print this help")
