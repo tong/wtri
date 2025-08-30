@@ -5,19 +5,18 @@ class Server {
 	public var maxConnections(default, null):Int;
 	public var handle:Request->Response->Void;
 
-	#if (hl && libuv)
+	#if hl
 	public var uv(default, null):Bool;
 	public var loop(default, null):hl.uv.Loop;
 	#end
 
-	public function new(handle:Request->Response->Void) {
+	public function new(handle:Request->Response->Void)
 		this.handle = handle;
-	}
 
 	public function listen(port:Int, host = 'localhost', uv = false, maxConnections = 10):Server {
 		#if sys
 		this.maxConnections = maxConnections;
-		#if (hl && libuv)
+		#if hl
 		if (this.uv = uv) {
 			loop = hl.uv.Loop.getDefault();
 			var tcp = new hl.uv.Tcp(loop);
