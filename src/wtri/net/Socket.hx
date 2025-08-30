@@ -1,18 +1,18 @@
 package wtri.net;
 
 interface Socket {
-	function write(data:Data):Void;
+	function write(data:Bytes):Void;
 	function writeInput(input:haxe.io.Input, len:Int):Void;
 	function close():Void;
 }
 
 class TCPSocket implements Socket {
-	public var socket(default, null):sys.net.Socket;
+	public final socket:sys.net.Socket;
 
 	public inline function new(socket:sys.net.Socket)
 		this.socket = socket;
 
-	public inline function write(data:Data)
+	public inline function write(data:Bytes)
 		socket.output.write(data);
 
 	public inline function writeInput(input:haxe.io.Input, len:Int)
@@ -24,12 +24,12 @@ class TCPSocket implements Socket {
 
 #if hl
 class UVSocket implements Socket {
-	public var socket(default, null):hl.uv.Stream;
+	public final socket:hl.uv.Stream;
 
 	public inline function new(socket:hl.uv.Stream)
 		this.socket = socket;
 
-	public inline function write(data:Data)
+	public inline function write(data:Bytes)
 		socket.write(data);
 
 	public inline function writeInput(input:haxe.io.Input, len:Int)
