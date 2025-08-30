@@ -1,6 +1,7 @@
 package wtri;
 
 import wtri.http.Headers;
+import wtri.http.HeaderName;
 
 class Response {
 	public static var defaultHeaders:Headers = [];
@@ -64,15 +65,15 @@ class Response {
 		if (data != null)
 			this.data = data;
 		if (!headersSent) {
-			// var extraHeaders = new Map<String, String>();
-			// if (this.data != null && !this.headers.exists(Content_Length)) {
-			//	extraHeaders.set(Content_Length, Std.string(this.data.length));
-			// }
-			// writeHead(this.code, extraHeaders);
+			var extraHeaders = new Map<String, String>();
 			if (this.data != null && !this.headers.exists(Content_Length)) {
-				headers.set(Content_Length, Std.string(this.data.length));
+				extraHeaders.set(Content_Length, Std.string(this.data.length));
 			}
-			writeHead(this.code);
+			writeHead(this.code, extraHeaders);
+			// if (this.data != null && !this.headers.exists(Content_Length)) {
+			//	headers.set(Content_Length, Std.string(this.data.length));
+			// }
+			// writeHead(this.code);
 		}
 		if (this.data != null)
 			socket.write(this.data);
@@ -81,4 +82,7 @@ class Response {
 
 	inline function writeLine(line:String)
 		socket.write('$line\r\n');
+
+	public function toString()
+		return '${request.method} ${request.path} ${code}';
 }

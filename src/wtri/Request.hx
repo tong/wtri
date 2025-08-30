@@ -99,5 +99,5 @@ class Request {
 		return headers.exists(header) ? ~/ ?, ?/g.split(headers.get(header)) : [];
 
 	public function toString()
-		return '$method $path $protocol';
+		return '$method $path';
 }
