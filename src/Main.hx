@@ -26,7 +26,8 @@ private function main() {
 			if (!FileSystem.exists(path) || !FileSystem.isDirectory(path))
 				exit(1, 'Root path not found');
 			root = path;
-		}, @doc("Deflate")
+		},
+		@doc("Enable deflate content encoding")
 		["--deflate"] => (level:Int) -> deflate = level,
 		#if hl
 		@doc("Use libuv (hl)") ["--uv"] => (connections:Int) -> {
@@ -35,7 +36,7 @@ private function main() {
 		},
 		#end
 		#if hscript
-		@doc("Script") ["--hscript"] => () -> scripting = true,
+		@doc("Enable hcript handler") ["--hscript"] => () -> scripting = true,
 		#end
 		@doc("Disable logging to stdout")
 		["--quiet"] => () -> quiet = true, @doc("Print this help")
