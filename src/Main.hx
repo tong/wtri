@@ -91,39 +91,31 @@ private function main() {
 	handlers.push(new wtri.handler.FileSystemHandler(root, true));
 
 	if (deflate > 0) {
-		var d = new wtri.handler.ContentEncoding(["deflate" => b -> return haxe.zip.Compress.run(b, deflate)]);
-		// var d = new wtri.handler.ContentEncoding(["deflate" => b -> return format.tools.Deflate.run(b)])
-		handlers.push(d);
+		handlers.push(new wtri.handler.ContentEncoding([
+			"deflate" => b -> {
+				return haxe.zip.Compress.run(b, deflate);
+				// return format.tools.Deflate.run(b);
+			}
+		]));
 	}
 
 	server = new wtri.Server((req, res) -> {
-		// res.end( 'Hello!' );
-		/*
-			if( req.path == "/favicon.ico" ) {
-				res.redirect('/favicon.svg');
-			}
-		 */
 		for (h in handlers)
 			h.handle(req, res);
 		if (!res.finished)
 			res.end();
 		if (!quiet) {
+			var info = '${req.method} - ${res.code} - ${req.path}';
 			if (Std.isOfType(req.socket, TCPSocket)) {
 				var tcp:wtri.net.Socket.TCPSocket = cast req.socket;
 				var peer = tcp.socket.peer();
-				log('${peer.host} - ${req.method} - ${res.code} - ${req.path}');
-			} else {
-				log('${req.method} - ${res.code} - ${req.path}');
+				info = '${peer.host} - $info';
 			}
+			log(info);
 		}
 	});
 	log('Starting server http://$host:$port');
 	server.listen(port, host, uv, maxConnections);
-	// try {
-	//	server.listen(port, host, uv, maxConnections);
-	// } catch (e) {
-	//	Sys.stderr().writeString(e.message);
-	//	Sys.exit(1);
 }
 
 function log(str:String) {
