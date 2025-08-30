@@ -30,8 +30,12 @@ class HScriptHandler implements wtri.Handler {
 		} catch (e) {
 			if (debug) {
 				trace(e);
-				if (!res.finished)
-					res.end(INTERNAL_SERVER_ERROR, Bytes.ofString(Std.string(e)));
+				if (!res.finished) {
+					var msg = e.toString();
+					if (msg == null) // ISSUE:  for some reason null on jvm
+						msg = "failed to execute hscript";
+					res.end(INTERNAL_SERVER_ERROR, Bytes.ofString(msg));
+				}
 			} else {
 				if (!res.finished)
 					res.end(INTERNAL_SERVER_ERROR);
