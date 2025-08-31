@@ -109,17 +109,21 @@ function start(host = "localhost", port = 8080, ?root:String, deflate = 0, scrip
 	}
 
 	server = new wtri.Server((req, res) -> {
+		var peerHost:String = null;
+		if (!quiet && Std.isOfType(req.socket, TCPSocket)) {
+			final tcp:wtri.net.Socket.TCPSocket = cast req.socket;
+			final peer = tcp.socket.peer();
+			if (peer != null)
+				peerHost = peer.host.toString();
+		}
 		for (h in handlers)
 			h.handle(req, res);
 		if (!res.finished)
 			res.end();
 		if (!quiet) {
 			var info = '${req.method} - ${res.code} - ${req.path}';
-			if (Std.isOfType(req.socket, TCPSocket)) {
-				final tcp:wtri.net.Socket.TCPSocket = cast req.socket;
-				final peer = tcp.socket.peer();
-				info = '${peer.host} - $info';
-			}
+			if (peerHost != null)
+				info = '${peerHost} - $info';
 			log(info);
 		}
 	});
