@@ -16,6 +16,7 @@ class HScriptHandler implements wtri.Handler {
 	public var cache:Map<String, Cache> = [];
 
 	public function new(root:String, extension = "hscript", mime = TextPlain, debug = true) {
+		// this.root = FileSystem.fullPath(root.trim()).removeTrailingSlashes();
 		this.root = Path.normalize(root).removeTrailingSlashes();
 		this.extension = extension;
 		this.mime = mime;
@@ -54,6 +55,15 @@ class HScriptHandler implements wtri.Handler {
 					res.end(INTERNAL_SERVER_ERROR);
 			}
 			return true;
+		} catch (e) {
+			var msg = debug ? haxe.CallStack.toString(haxe.CallStack.exceptionStack()).trim() : e.toString();
+			if (msg == null) // ISSUE: null on jvm
+				msg = "hscript interp error";
+			if (debug)
+				trace(msg);
+			if (!res.finished) {
+				res.end(INTERNAL_SERVER_ERROR, Bytes.ofString(msg));
+			}
 		}
 		if (!res.finished) {
 			final body = (result == null) ? Bytes.ofString("") : Bytes.ofString(Std.string(result));
@@ -62,13 +72,6 @@ class HScriptHandler implements wtri.Handler {
 			res.end(body);
 		}
 		return true;
-	}
-
-	function executeScript(path:String, req:Request, res:Response) {
-		final ast = getAst(path);
-		interp.variables.set("req", req);
-		interp.variables.set("res", res);
-		return interp.execute(ast);
 	}
 
 	function initParser():hscript.Parser {
@@ -97,5 +100,12 @@ class HScriptHandler implements wtri.Handler {
 		final ast = parser.parseString(File.getContent(path));
 		cache.set(path, {ast: ast, mtime: mtime});
 		return ast;
+	}
+
+	function executeScript(path:String, req:Request, res:Response) {
+		final ast = getAst(path);
+		interp.variables.set("req", req);
+		interp.variables.set("res", res);
+		return interp.execute(ast);
 	}
 }
