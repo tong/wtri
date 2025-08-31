@@ -16,8 +16,7 @@ class HScriptHandler implements wtri.Handler {
 	public var cache:Map<String, Cache> = [];
 
 	public function new(root:String, extension = "hscript", mime = TextPlain, debug = true) {
-		// this.root = FileSystem.fullPath(root.trim()).removeTrailingSlashes();
-		this.root = Path.normalize(root).removeTrailingSlashes();
+		this.root = FileSystem.fullPath(Path.normalize(root));
 		this.extension = extension;
 		this.mime = mime;
 		this.debug = debug;
@@ -44,23 +43,18 @@ class HScriptHandler implements wtri.Handler {
 		try {
 			result = executeScript(scriptPath, req, res);
 		} catch (e:hscript.Expr.Error) {
-			if (debug) {
-				// trace(haxe.CallStack.toString(haxe.CallStack.exceptionStack()));
-				if (!res.finished) {
-					var msg = hscript.Printer.errorToString(e);
+			if (!res.finished) {
+				if (debug) {
+					var msg = getScriptErrorMessage(e);
 					res.end(INTERNAL_SERVER_ERROR, Bytes.ofString(msg));
-				}
-			} else {
-				if (!res.finished)
+				} else
 					res.end(INTERNAL_SERVER_ERROR);
 			}
 			return true;
-		} catch (e) {
+		} catch (e:haxe.Exception) {
 			var msg = debug ? haxe.CallStack.toString(haxe.CallStack.exceptionStack()).trim() : e.toString();
 			if (msg == null) // ISSUE: null on jvm
 				msg = "hscript interp error";
-			if (debug)
-				trace(msg);
 			if (!res.finished) {
 				res.end(INTERNAL_SERVER_ERROR, Bytes.ofString(msg));
 			}
@@ -107,5 +101,24 @@ class HScriptHandler implements wtri.Handler {
 		interp.variables.set("req", req);
 		interp.variables.set("res", res);
 		return interp.execute(ast);
+	}
+
+	function getScriptErrorMessage(err:hscript.Expr.Error) {
+		#if hscriptPos
+		return '${err.line}:${err.pmin}-${err.pmax}: ' + switch err.e {
+			case EInvalidChar(c): "Invalid character: '" + (StringTools.isEof(c) ? "EOF" : String.fromCharCode(c)) + "' (" + c + ")";
+			case EUnexpected(s): "Unexpected token: \"" + s + "\"";
+			case EUnterminatedString: "Unterminated string";
+			case EUnterminatedComment: "Unterminated comment";
+			case EInvalidPreprocessor(str): "Invalid preprocessor (" + str + ")";
+			case EUnknownVariable(v): "Unknown variable: " + v;
+			case EInvalidIterator(v): "Invalid iterator: " + v;
+			case EInvalidOp(op): "Invalid operator: " + op;
+			case EInvalidAccess(f): "Invalid access to field " + f;
+			case ECustom(msg): msg;
+		};
+		#else
+		return hscript.Printer.errorToString(err);
+		#end
 	}
 }
