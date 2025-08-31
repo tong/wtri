@@ -8,49 +8,31 @@ import wtri.http.Method;
 	Represents an incoming HTTP/1.1 request.
 **/
 class Request {
-	static final EXPR_HTTP = ~/^(GET|POST|PUT|HEAD|DELETE|PATCH|OPTIONS|TRACE|CONNECT) ([^ ]+) (HTTP\/1\.[01])$/i;
-	static final EXPR_HTTP_HEADER = ~/^([a-zA-Z0-9_-]+): *(.*)$/;
+	public static final HTTP_REQUEST = ~/^(GET|POST|PUT|HEAD|DELETE|PATCH|OPTIONS|TRACE|CONNECT) ([^ ]+) (HTTP\/1\.[01])$/i;
+	public static final HTTP_HEADER = ~/^([a-zA-Z0-9_-]+): *(.*)$/;
 
-	/** The underlying socket for this request. */
 	public final socket:Socket;
-
-	/** The input stream to read from. */
 	public final input:haxe.io.Input;
-
-	/** The HTTP method of the request (e.g., GET, POST). */
-	public final method:Method;
-
-	/** The path of the request, without the query string. */
-	public var path:String;
-
-	/** The HTTP protocol version (e.g., "HTTP/1.1"). */
 	public final protocol:String;
-
-	/** A map of the query string parameters. */
-	public final params = new Map<String, String>();
-
-	/** The headers of the request. */
-	public final headers = new Headers();
-
-	/** The body of the request. */
+	public final method:Method;
+	public final headers:Headers = [];
+	public final params:Map<String, String> = [];
 	public final data:Bytes;
+
+	public var path:String;
 
 	public function new(socket:Socket, input:haxe.io.Input) {
 		this.socket = socket;
 		this.input = input;
-
 		final line = input.readLine();
-		if (!EXPR_HTTP.match(line)) {
+		if (!HTTP_REQUEST.match(line)) {
 			throw new Error(BAD_REQUEST, 'Invalid request line: $line');
 		}
-
-		method = EXPR_HTTP.matched(1);
-		path = EXPR_HTTP.matched(2);
-		protocol = EXPR_HTTP.matched(3);
-
+		method = HTTP_REQUEST.matched(1);
+		path = HTTP_REQUEST.matched(2);
+		protocol = HTTP_REQUEST.matched(3);
 		parsePath();
 		parseHeaders();
-
 		data = switch method {
 			case POST | PUT | PATCH:
 				final contentLength = headers.get(Content_Length);
@@ -68,24 +50,25 @@ class Request {
 	function parsePath() {
 		final pos = path.indexOf('?');
 		if (pos != -1) {
-			final queryString = path.substr(pos + 1);
+			final query = path.substr(pos + 1);
 			path = path.substr(0, pos);
-			for (p in queryString.split('&')) {
+			for (p in query.split('&')) {
 				final parts = p.split("=");
 				final name = StringTools.urlDecode(parts[0]);
-				final value = (parts.length > 1) ? StringTools.urlDecode(parts[1]) : "";
+				final value = parts.length > 1 ? StringTools.urlDecode(parts[1]) : "";
 				params.set(name, value);
 			}
 		}
+		path = StringTools.urlDecode(path);
 	}
 
 	function parseHeaders() {
 		var line:String;
 		while ((line = input.readLine()).length > 0) {
-			if (!EXPR_HTTP_HEADER.match(line))
+			if (!HTTP_HEADER.match(line))
 				throw new Error(BAD_REQUEST, 'Invalid header: $line');
-			final key = EXPR_HTTP_HEADER.matched(1);
-			final val = EXPR_HTTP_HEADER.matched(2);
+			final key = HTTP_HEADER.matched(1);
+			final val = HTTP_HEADER.matched(2);
 			headers.set(key, val);
 		}
 	}
@@ -97,6 +80,12 @@ class Request {
 	**/
 	public function getEncoding(header:HeaderName = Accept_Encoding):Array<String>
 		return headers.exists(header) ? ~/ ?, ?/g.split(headers.get(header)) : [];
+
+	// public function dispose() {
+	//	headers = [];
+	//	data = null;
+	//	socket.close();
+	// }
 
 	public function toString()
 		return '$method $path';
