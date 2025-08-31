@@ -56,10 +56,10 @@ class Server {
 		final req = new Request(socket, input);
 		final res = createResponse(req);
 		handle(req, res);
-		switch res.headers.get(Connection) {
-			case null, 'close':
-				socket.close();
-		}
+		// switch res.headers.get(Connection) {
+		//	case null, 'close':
+		//		socket.close();
+		// }
 	}
 
 	function createResponse(req:Request) {

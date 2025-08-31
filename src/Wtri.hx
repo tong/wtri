@@ -116,8 +116,8 @@ function start(host = "localhost", port = 8080, ?root:String, deflate = 0, scrip
 		if (!quiet) {
 			var info = '${req.method} - ${res.code} - ${req.path}';
 			if (Std.isOfType(req.socket, TCPSocket)) {
-				var tcp:wtri.net.Socket.TCPSocket = cast req.socket;
-				var peer = tcp.socket.peer();
+				final tcp:wtri.net.Socket.TCPSocket = cast req.socket;
+				final peer = tcp.socket.peer();
 				info = '${peer.host} - $info';
 			}
 			log(info);

@@ -27,16 +27,15 @@ class Response {
 		return request.socket;
 
 	public function writeHead(?code:StatusCode, ?extraHeaders:Headers) {
-		if (headersSent)
+		if (finished || headersSent)
 			return;
 		if (code != null)
 			this.code = code;
-		writeLine('${protocol} ${this.code} ' + StatusMessage.fromStatusCode(this.code));
+		writeLine('${protocol} ${this.code} ${StatusMessage.fromStatusCode(this.code)}');
+		for (k => v in Response.defaultHeaders)
+			this.headers.set(k, v);
 		if (extraHeaders != null)
 			for (k => v in extraHeaders)
-				this.headers.set(k, v);
-		for (k => v in Response.defaultHeaders)
-			if (!this.headers.exists(k))
 				this.headers.set(k, v);
 		for (k => v in this.headers)
 			writeLine('$k: $v');
@@ -75,9 +74,15 @@ class Response {
 			// }
 			// writeHead(this.code);
 		}
-		if (this.data != null)
-			socket.write(this.data);
+		if (this.data != null) {
+			final input = new haxe.io.BytesInput(this.data);
+			socket.writeInput(input, this.data.length);
+		}
 		finished = true;
+		switch headers.get(Connection) {
+			case null, 'close':
+				socket.close();
+		}
 	}
 
 	inline function writeLine(line:String)
