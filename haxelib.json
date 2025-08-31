@@ -21,6 +21,7 @@
   ],
   "classPath": "src/",
   "dependencies": {
-    "format": ""
+    "format": "",
+    "hscript": ""
   }
 }
