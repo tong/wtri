@@ -49,17 +49,45 @@ class FileSystemHandler implements wtri.Handler {
 				final data = Bytes.ofString(html);
 				res.headers.set(Content_Type, "text/html");
 				res.headers.set(Content_Length, Std.string(data.length));
-				// res.end(OK, html);
 				res.data = data;
 			} else {
-				// res.end(NOT_FOUND, Bytes.ofString(NOT_FOUND));
 				res.code = NOT_FOUND;
-				res.data = Bytes.ofString(NOT_FOUND);
+				res.data = NOT_FOUND;
 			}
 			return true;
 		}
-		res.headers.set(Content_Type, getFileContentType(filePath));
-		res.data = File.getBytes(filePath);
+		final stat = FileSystem.stat(filePath);
+		final totalSize = stat.size;
+		var rangeString = req.headers.get(Range);
+		if (rangeString != null) {
+			var start:Int = -1, end:Int = -1;
+			final re = ~/^bytes=(\d+)-(\d*)$/;
+			if (re.match(rangeString)) {
+				start = Std.parseInt(re.matched(1));
+				final endStr = re.matched(2);
+				end = endStr == "" ? totalSize - 1 : Std.parseInt(endStr);
+			}
+			if (end >= totalSize)
+				end = totalSize - 1;
+			if (start < 0 || start >= totalSize || start > end) {
+				res.code = REQUEST_RANGE_NOT_SATISFIABLE;
+				res.headers.set("Content-Range", 'bytes */${totalSize}');
+				return true; // No body for 416 response
+			}
+			final contentLength = (end - start) + 1;
+			res.code = PARTIAL_CONTENT;
+			res.headers.set(Content_Type, getFileContentType(filePath));
+			res.headers.set("Content-Range", 'bytes ${start}-${end}/${totalSize}');
+			res.headers.set(Content_Length, Std.string(contentLength));
+			final f = File.read(filePath);
+			f.seek(start, SeekBegin);
+			res.data = f.read(contentLength);
+			f.close();
+		} else {
+			res.data = File.getBytes(filePath);
+			res.headers.set(Content_Type, getFileContentType(filePath));
+			res.headers.set(Content_Length, Std.string(totalSize));
+		}
 		return true;
 	}
 
