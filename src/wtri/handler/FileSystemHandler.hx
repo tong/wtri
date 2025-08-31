@@ -8,7 +8,7 @@ class FileSystemHandler implements wtri.Handler {
 	public var autoIndex:Bool;
 
 	public function new(root:String, ?mime:Map<String, String>, ?indexFileNames:Array<String>, ?indexFileTypes:Array<String>, ?autoIndex = false) {
-		this.root = FileSystem.fullPath(root.trim()).removeTrailingSlashes();
+		this.root = FileSystem.fullPath(Path.normalize(root));
 		this.mime = mime ?? [
 			"css" => TextCss,
 			"gif" => ImageGif,
