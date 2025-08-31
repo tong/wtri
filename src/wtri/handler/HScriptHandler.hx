@@ -1,39 +1,52 @@
 package wtri.handler;
 
+private typedef Cache = {
+	ast:hscript.Expr,
+	mtime:Date
+}
+
 @:require(hscript)
 class HScriptHandler implements wtri.Handler {
 	public var root:String;
-	public var mime:Mime = TextPlain;
-	public var extension = 'hscript';
-
-	public var parser = new hscript.Parser();
-	public var interp = new hscript.Interp();
+	public var extension:String;
+	public var mime:Mime;
+	public var parser:hscript.Parser;
+	public var interp:hscript.Interp;
 	public var debug:Bool;
+	public var cache:Map<String, Cache> = [];
 
-	public function new(root:String, debug = true) {
-		this.root = root.removeTrailingSlashes();
+	public function new(root:String, extension = "hscript", mime = TextPlain, debug = true) {
+		this.root = Path.normalize(root).removeTrailingSlashes();
+		this.extension = extension;
+		this.mime = mime;
 		this.debug = debug;
-		parser.allowTypes = true;
-		parser.allowJSON = true;
-		parser.allowMetadata = true;
+		parser = initParser();
+		interp = initInterp();
 	}
 
 	public function handle(req:Request, res:Response):Bool {
 		if (Path.extension(req.path) != extension)
 			return false;
+
 		final scriptPath = Path.normalize(Path.join([root, req.path]));
+		// Prevent path traversal attacks
+		if (!scriptPath.startsWith(root)) {
+			if (!res.finished)
+				res.end(FORBIDDEN);
+			return true;
+		}
+
 		if (!FileSystem.exists(scriptPath) || FileSystem.isDirectory(scriptPath))
 			return false;
+
 		var result:Dynamic = null;
 		try {
 			result = executeScript(scriptPath, req, res);
-		} catch (e) {
+		} catch (e:hscript.Expr.Error) {
 			if (debug) {
-				trace(e);
+				// trace(haxe.CallStack.toString(haxe.CallStack.exceptionStack()));
 				if (!res.finished) {
-					var msg = e.toString();
-					if (msg == null) // ISSUE:  for some reason null on jvm
-						msg = "failed to execute hscript";
+					var msg = hscript.Printer.errorToString(e);
 					res.end(INTERNAL_SERVER_ERROR, Bytes.ofString(msg));
 				}
 			} else {
@@ -44,7 +57,7 @@ class HScriptHandler implements wtri.Handler {
 		}
 		if (!res.finished) {
 			final body = (result == null) ? Bytes.ofString("") : Bytes.ofString(Std.string(result));
-			final mime = interp.variables.exists("mime") ? interp.variables.get("mime") : mime;
+			final mime = interp.variables.exists("mime") ? interp.variables.get("mime") : this.mime;
 			res.writeHead(OK, ['Content-Type' => mime, 'Content-Length' => '${body.length}']);
 			res.end(body);
 		}
@@ -52,9 +65,37 @@ class HScriptHandler implements wtri.Handler {
 	}
 
 	function executeScript(path:String, req:Request, res:Response) {
-		final ast = parser.parseString(File.getContent(path));
+		final ast = getAst(path);
 		interp.variables.set("req", req);
 		interp.variables.set("res", res);
 		return interp.execute(ast);
+	}
+
+	function initParser():hscript.Parser {
+		final parser = new hscript.Parser();
+		parser.allowTypes = true;
+		parser.allowJSON = true;
+		parser.allowMetadata = true;
+		return parser;
+	}
+
+	function initInterp():hscript.Interp {
+		final interp = new hscript.Interp();
+		interp.variables.set("Bytes", Bytes);
+		interp.variables.set("Date", Date);
+		interp.variables.set("FileSystem", FileSystem);
+		interp.variables.set("Math", Math);
+		return interp;
+	}
+
+	// Cache parsed AST to avoid re-parsing on every request
+	function getAst(path:String):hscript.Expr {
+		final mtime = FileSystem.stat(path).mtime;
+		final cached = cache.get(path);
+		if (cached != null && cached.mtime.getTime() == mtime.getTime())
+			return cached.ast;
+		final ast = parser.parseString(File.getContent(path));
+		cache.set(path, {ast: ast, mtime: mtime});
+		return ast;
 	}
 }

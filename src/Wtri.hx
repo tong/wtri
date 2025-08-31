@@ -64,11 +64,7 @@ function start(host = "localhost", port = 8080, ?root:String, deflate = 0, scrip
 	#if hscript
 	if (scripting) {
 		final hs = new wtri.handler.HScriptHandler(root);
-		hs.interp.variables.set("Bytes", Bytes);
-		hs.interp.variables.set("Date", Date);
-		hs.interp.variables.set("Math", Math);
-		hs.interp.variables.set("FileSystem", FileSystem);
-		// hs.interp.variables.set("File", File);
+		// hs.interp.variables.set("Bytes", Bytes);
 		handlers.push(hs);
 	}
 	#end
