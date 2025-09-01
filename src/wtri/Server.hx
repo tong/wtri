@@ -33,10 +33,34 @@ class Server {
 		final server = new sys.net.Socket();
 		server.bind(new sys.net.Host(host), port);
 		server.listen(maxConnections);
+		server.setBlocking(false);
+
+		var sockets = [server];
 		listening = true;
+
 		while (listening) {
-			var client = server.accept();
-			inline process(new wtri.net.Socket.TCPSocket(client), client.input);
+			var selectSockets = sys.net.Socket.select(sockets, null, null, null);
+
+			for (s in selectSockets.read) {
+				if (s == server) {
+					final client = server.accept();
+					sockets.push(client);
+					Sys.println('Accepted new connection.');
+				} else {
+					// Existing client has sent data.
+					// For now, we will process the entire request blocking,
+					// but this is where incremental parsing would be needed for a fully async server.
+					try {
+						inline process(new wtri.net.Socket.TCPSocket(s), s.input);
+					} catch (e:haxe.io.Eof) {
+						// Client disconnected
+					} catch (e:Any) {
+						Sys.println('Error on client socket: $e');
+					}
+					sockets.remove(s);
+					s.close();
+				}
+			}
 		}
 		server.close();
 		#end

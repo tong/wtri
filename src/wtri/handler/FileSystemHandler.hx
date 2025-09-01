@@ -23,6 +23,7 @@ class FileSystemHandler implements wtri.Handler {
 			"svg" => "image/svg+xml",
 			"txt" => TextPlain,
 			"wasm" => "application/wasm",
+			"webm" => "video/webm",
 			"webp" => ImageWebp,
 			"woff" => "font/woff",
 			"woff2" => "font/woff2",
@@ -36,10 +37,10 @@ class FileSystemHandler implements wtri.Handler {
 	public function handle(req:Request, res:Response):Bool {
 		final path = resolvePath(req.path);
 		if (!path.startsWith(root)) {
-			// res.writeHead(FORBIDDEN);
 			res.code = FORBIDDEN;
-			res.data = Bytes.ofString(FORBIDDEN);
-			// res.end(Bytes.ofString("403 Forbidden"));
+			final bodyBytes = Bytes.ofString(FORBIDDEN);
+			res.headers.set(Content_Length, Std.string(bodyBytes.length));
+			res.body = new haxe.io.BytesInput(bodyBytes);
 			return true;
 		}
 		final filePath = findFile(path);
@@ -49,10 +50,12 @@ class FileSystemHandler implements wtri.Handler {
 				final data = Bytes.ofString(html);
 				res.headers.set(Content_Type, "text/html");
 				res.headers.set(Content_Length, Std.string(data.length));
-				res.data = data;
+				res.body = new haxe.io.BytesInput(data);
 			} else {
 				res.code = NOT_FOUND;
-				res.data = NOT_FOUND;
+				final bodyBytes = Bytes.ofString(NOT_FOUND);
+				res.headers.set(Content_Length, Std.string(bodyBytes.length));
+				res.body = new haxe.io.BytesInput(bodyBytes);
 			}
 			return true;
 		}
@@ -81,13 +84,13 @@ class FileSystemHandler implements wtri.Handler {
 			res.headers.set(Content_Length, Std.string(contentLength));
 			final f = File.read(filePath);
 			f.seek(start, SeekBegin);
-			res.data = f.read(contentLength);
-			f.close();
+			res.body = f;
+			// res.body = new haxe.io.BytesInput(f.read(contentLength));
+			// f.close();
 		} else {
-			res.data = File.getBytes(filePath);
-			// res.input =
 			res.headers.set(Content_Type, getFileContentType(filePath));
 			res.headers.set(Content_Length, Std.string(totalSize));
+			res.body = File.read(filePath, true);
 		}
 		return true;
 	}

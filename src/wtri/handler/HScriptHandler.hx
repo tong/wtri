@@ -31,8 +31,10 @@ class HScriptHandler implements wtri.Handler {
 		final scriptPath = Path.normalize(Path.join([root, req.path]));
 		// Prevent path traversal attacks
 		if (!scriptPath.startsWith(root)) {
-			if (!res.finished)
-				res.end(FORBIDDEN);
+			if (res.finished)
+				return true;
+			res.code = FORBIDDEN;
+			res.end();
 			return true;
 		}
 
@@ -43,28 +45,42 @@ class HScriptHandler implements wtri.Handler {
 		try {
 			result = executeScript(scriptPath, req, res);
 		} catch (e:hscript.Expr.Error) {
-			if (!res.finished) {
-				if (debug) {
-					var msg = getScriptErrorMessage(e);
-					res.end(INTERNAL_SERVER_ERROR, Bytes.ofString(msg));
-				} else
-					res.end(INTERNAL_SERVER_ERROR);
+			if (res.finished)
+				return true;
+			res.code = INTERNAL_SERVER_ERROR;
+			if (debug) {
+				var msg = getScriptErrorMessage(e);
+				final bodyBytes = Bytes.ofString(msg);
+				res.headers.set(Content_Length, Std.string(bodyBytes.length));
+				res.body = new haxe.io.BytesInput(bodyBytes);
 			}
+			res.end();
 			return true;
 		} catch (e:haxe.Exception) {
+			if (res.finished)
+				return true;
+			res.code = INTERNAL_SERVER_ERROR;
 			var msg = debug ? haxe.CallStack.toString(haxe.CallStack.exceptionStack()).trim() : e.toString();
 			if (msg == null) // ISSUE: null on jvm
 				msg = "hscript interp error";
-			if (!res.finished) {
-				res.end(INTERNAL_SERVER_ERROR, Bytes.ofString(msg));
-			}
+			final bodyBytes = Bytes.ofString(msg);
+			res.headers.set(Content_Length, Std.string(bodyBytes.length));
+			res.body = new haxe.io.BytesInput(bodyBytes);
+			res.end();
+			return true;
 		}
-		if (!res.finished) {
-			final body = (result == null) ? Bytes.ofString("") : Bytes.ofString(Std.string(result));
-			final mime = interp.variables.exists("mime") ? interp.variables.get("mime") : this.mime;
-			res.writeHead(OK, ['Content-Type' => mime, 'Content-Length' => '${body.length}']);
-			res.end(body);
-		}
+
+		if (res.finished)
+			return true;
+
+		res.code = OK;
+		final bodyBytes = (result == null) ? Bytes.ofString("") : Bytes.ofString(Std.string(result));
+		final mime = interp.variables.exists("mime") ? interp.variables.get("mime") : this.mime;
+		res.headers.set(Content_Type, mime);
+		res.headers.set(Content_Length, Std.string(bodyBytes.length));
+		res.body = new haxe.io.BytesInput(bodyBytes);
+		res.end();
+
 		return true;
 	}
 

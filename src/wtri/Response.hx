@@ -15,7 +15,7 @@ class Response {
 
 	public var code:StatusCode = OK;
 	public var headers:Headers;
-	public var data:Bytes;
+	public var body:haxe.io.Input;
 
 	public function new(request:Request, ?headers:Headers, protocol = "HTTP/1.1") {
 		this.request = request;
@@ -56,27 +56,24 @@ class Response {
 		end();
 	}
 
-	public function end(?code:StatusCode, ?data:Bytes) {
+	public function end(?code:StatusCode) {
 		if (finished)
 			return;
 		if (code != null)
 			this.code = code;
-		if (data != null)
-			this.data = data;
-		if (!headersSent) {
-			var extraHeaders = new Map<String, String>();
-			if (this.data != null && !this.headers.exists(Content_Length)) {
-				extraHeaders.set(Content_Length, Std.string(this.data.length));
+		if (!headersSent)
+			writeHead(this.code);
+		if (body != null) {
+			final contentLength = headers.get(Content_Length);
+			if (contentLength == null) {
+				// or we could use chunked encoding
+				throw "Content-Length header must be set before calling end()";
 			}
-			writeHead(this.code, extraHeaders);
-			// if (this.data != null && !this.headers.exists(Content_Length)) {
-			//	headers.set(Content_Length, Std.string(this.data.length));
-			// }
-			// writeHead(this.code);
-		}
-		if (this.data != null) {
-			final input = new haxe.io.BytesInput(this.data);
-			socket.writeInput(input, this.data.length);
+			try {
+				socket.writeInput(body, Std.parseInt(contentLength));
+			} catch (e) {
+				body.close();
+			}
 		}
 		finished = true;
 		switch headers.get(Connection) {
