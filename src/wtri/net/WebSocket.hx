@@ -2,7 +2,6 @@ package wtri.net;
 
 import haxe.crypto.Base64;
 import haxe.crypto.Sha1;
-import haxe.io.BytesBuffer;
 import haxe.io.Input;
 import haxe.io.Output;
 

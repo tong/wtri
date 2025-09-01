@@ -19,7 +19,7 @@ class Response {
 
 	public function new(request:Request, ?headers:Headers, protocol = "HTTP/1.1") {
 		this.request = request;
-		this.headers = headers ?? new Map();
+		this.headers = headers ?? [];
 		this.protocol = protocol;
 	}
 
@@ -43,9 +43,9 @@ class Response {
 		headersSent = true;
 	}
 
-	public inline function write(data:Bytes) {
-		socket.write(data);
-	}
+	// public inline function write(data:Bytes) {
+	//	socket.write(data);
+	// }
 
 	/* public inline function writeInput( input : haxe.io.Input, len : Int ) {
 		socket.writeInput( input, len );
@@ -85,9 +85,17 @@ class Response {
 		}
 	}
 
-	inline function writeLine(line:String)
-		socket.write(Bytes.ofString('$line\r\n'));
+	// public function dispose() {
+	//	finished = true;
+	//	code = null;
+	//	headers = [];
+	//	data = null;
+	//	socket.close();
+	// }
 
 	public function toString()
 		return '${request.method} ${request.path} ${code}';
+
+	inline function writeLine(line:String)
+		socket.write(Bytes.ofString('$line\r\n'));
 }

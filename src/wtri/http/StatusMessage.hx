@@ -245,6 +245,9 @@ enum abstract StatusMessage(String) from String to String {
 	 */
 	var NETWORK_AUTHENTICATION_REQUIRED = "Network Authentication Required";
 
+	@:to public inline function toBytes():Bytes
+		return Bytes.ofString(this);
+
 	/**
 	 * Returns the `StatusMessage` corresponding to the given `StatusCode`.
 	 * @param code The `StatusCode` to convert.

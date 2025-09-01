@@ -53,16 +53,15 @@ class Server {
 	}
 
 	public function process(socket:Socket, ?input:haxe.io.Input) {
-		final req = new Request(socket, input);
-		final res = createResponse(req);
-		handle(req, res);
-		// switch res.headers.get(Connection) {
-		//	case null, 'close':
-		//		socket.close();
-		// }
+		final req = request(socket, input);
+		handle(req, response(req));
 	}
 
-	function createResponse(req:Request) {
+	public function request(socket:Socket, ?input:haxe.io.Input):Request {
+		return new Request(socket, input);
+	}
+
+	public function response(req:Request):Response {
 		final res = new Response(req);
 		if (req.headers.get(Connection) == 'keep-alive') {
 			res.headers.set(Connection, 'close');

@@ -71,13 +71,13 @@ class FileSystemHandler implements wtri.Handler {
 				end = totalSize - 1;
 			if (start < 0 || start >= totalSize || start > end) {
 				res.code = REQUEST_RANGE_NOT_SATISFIABLE;
-				res.headers.set("Content-Range", 'bytes */${totalSize}');
+				res.headers.set(Content_Range, 'bytes */${totalSize}');
 				return true; // No body for 416 response
 			}
 			final contentLength = (end - start) + 1;
 			res.code = PARTIAL_CONTENT;
 			res.headers.set(Content_Type, getFileContentType(filePath));
-			res.headers.set("Content-Range", 'bytes ${start}-${end}/${totalSize}');
+			res.headers.set(Content_Range, 'bytes ${start}-${end}/${totalSize}');
 			res.headers.set(Content_Length, Std.string(contentLength));
 			final f = File.read(filePath);
 			f.seek(start, SeekBegin);
@@ -85,6 +85,7 @@ class FileSystemHandler implements wtri.Handler {
 			f.close();
 		} else {
 			res.data = File.getBytes(filePath);
+			// res.input =
 			res.headers.set(Content_Type, getFileContentType(filePath));
 			res.headers.set(Content_Length, Std.string(totalSize));
 		}
