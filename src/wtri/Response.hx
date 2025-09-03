@@ -1,7 +1,6 @@
 package wtri;
 
 import wtri.http.Headers;
-import wtri.http.HeaderName;
 
 class Response {
 	public static var defaultHeaders:Headers = [];
@@ -9,7 +8,6 @@ class Response {
 	public final request:Request;
 	public final protocol:String;
 
-	public var socket(get, never):Socket;
 	public var headersSent(default, null) = false;
 	public var finished(default, null) = false;
 
@@ -22,9 +20,6 @@ class Response {
 		this.headers = headers ?? [];
 		this.protocol = protocol;
 	}
-
-	inline function get_socket():Socket
-		return request.socket;
 
 	public function writeHead(?code:StatusCode, ?extraHeaders:Headers) {
 		if (finished || headersSent)
@@ -43,13 +38,6 @@ class Response {
 		headersSent = true;
 	}
 
-	// public inline function write(data:Bytes) {
-	//	socket.write(data);
-	// }
-
-	/* public inline function writeInput( input : haxe.io.Input, len : Int ) {
-		socket.writeInput( input, len );
-	}*/
 	public function redirect(path:String) {
 		code = MOVED_PERMANENTLY;
 		headers.set(Location, path);
@@ -70,7 +58,7 @@ class Response {
 				throw "Content-Length header must be set before calling end()";
 			}
 			try {
-				socket.writeInput(body, Std.parseInt(contentLength));
+				request.socket.writeInput(body, Std.parseInt(contentLength));
 			} catch (e) {
 				body.close();
 			}
@@ -78,21 +66,13 @@ class Response {
 		finished = true;
 		switch headers.get(Connection) {
 			case null, 'close':
-				socket.close();
+				request.socket.close();
 		}
 	}
-
-	// public function dispose() {
-	//	finished = true;
-	//	code = null;
-	//	headers = [];
-	//	data = null;
-	//	socket.close();
-	// }
 
 	public function toString()
 		return '${request.method} ${request.path} ${code}';
 
 	inline function writeLine(line:String)
-		socket.write(Bytes.ofString('$line\r\n'));
+		request.socket.write(Bytes.ofString('$line\r\n'));
 }

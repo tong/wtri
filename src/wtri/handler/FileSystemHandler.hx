@@ -8,7 +8,7 @@ class FileSystemHandler implements wtri.Handler {
 	public var autoIndex:Bool;
 
 	public function new(root:String, ?mime:Map<String, String>, ?indexFileNames:Array<String>, ?indexFileTypes:Array<String>, ?autoIndex = false) {
-		this.root = FileSystem.fullPath(Path.normalize(root));
+		this.root = FileSystem.fullPath(root);
 		this.mime = mime ?? [
 			"css" => TextCss,
 			"gif" => ImageGif,
@@ -84,9 +84,9 @@ class FileSystemHandler implements wtri.Handler {
 			res.headers.set(Content_Length, Std.string(contentLength));
 			final f = File.read(filePath);
 			f.seek(start, SeekBegin);
-			res.body = f;
-			// res.body = new haxe.io.BytesInput(f.read(contentLength));
-			// f.close();
+			// res.body = f;
+			res.body = new haxe.io.BytesInput(f.read(contentLength));
+			f.close();
 		} else {
 			res.headers.set(Content_Type, getFileContentType(filePath));
 			res.headers.set(Content_Length, Std.string(totalSize));

@@ -30,8 +30,8 @@ private function main() {
 		@doc("Enable deflate content encoding")["--deflate"] => (level:Int) -> deflate = level,
         @doc("Disable auto indexing")["--no-autoindex"] => () -> autoIndex = false,
 		#if hl
-		@doc("Use libuv (hl)") ["--uv"] => (connections:Int) -> {
-            uv = true;
+		@doc("Use libuv (hl)")["--uv"] => (connections:Int) -> {
+			uv = true;
 			maxConnections = connections;
 		},
 		#end
@@ -64,7 +64,7 @@ function start(host = "localhost", port = 8080, ?root:String, autoIndex = true, 
 	#if hscript
 	if (scripting) {
 		final hs = new wtri.handler.HScriptHandler(root);
-		// hs.interp.variables.set("Bytes", Bytes);
+		//hs.interp.variables.set("Bytes", Bytes);
 		handlers.push(hs);
 	}
 	#end
