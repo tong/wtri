@@ -30,7 +30,7 @@ class HScriptHandler implements wtri.Handler {
 
 		final scriptPath = Path.normalize(Path.join([root, req.path]));
 		// Prevent path traversal attacks
-		if (!scriptPath.startsWith(root)) {
+		if (scriptPath != root && !scriptPath.startsWith(root + "/")) {
 			if (res.finished)
 				return true;
 			res.code = FORBIDDEN;

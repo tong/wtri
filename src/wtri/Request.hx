@@ -41,7 +41,7 @@ class Request {
 				final len = Std.parseInt(contentLength);
 				if (len == null || len < 0)
 					throw new Error(BAD_REQUEST, 'Invalid Content-Length: $contentLength');
-				len == 0 ? Bytes.alloc(0) : input.readAll(len);
+				len == 0 ? Bytes.alloc(0) : input.read(len);
 			case _:
 				Bytes.alloc(0);
 		}

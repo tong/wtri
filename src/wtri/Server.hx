@@ -25,7 +25,11 @@ class Server {
 			tcp.listen(maxConnections, () -> {
 				var s = tcp.accept();
 				s.readStart(bytes -> {
-					inline process(new wtri.net.Socket.UVSocket(s), new BytesInput(bytes));
+					try {
+						process(new wtri.net.Socket.UVSocket(s), new BytesInput(bytes));
+					} catch (e:Dynamic) {
+						s.close();
+					}
 				});
 			});
 			return this;
@@ -37,7 +41,11 @@ class Server {
 		listening = true;
 		while (listening) {
 			var client = server.accept();
-			inline process(new wtri.net.Socket.TCPSocket(client), client.input);
+			try {
+				process(new wtri.net.Socket.TCPSocket(client), client.input);
+			} catch (e:Dynamic) {
+				client.close();
+			}
 		}
 		server.close();
 		#end

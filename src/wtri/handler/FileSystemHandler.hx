@@ -36,7 +36,7 @@ class FileSystemHandler implements wtri.Handler {
 
 	public function handle(req:Request, res:Response):Bool {
 		final path = resolvePath(req.path);
-		if (!path.startsWith(root)) {
+		if (path != root && !path.startsWith(root + "/")) {
 			res.code = FORBIDDEN;
 			final bodyBytes = Bytes.ofString(FORBIDDEN);
 			res.headers.set(Content_Length, Std.string(bodyBytes.length));
