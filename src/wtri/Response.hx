@@ -57,10 +57,12 @@ class Response {
 				// or we could use chunked encoding
 				throw "Content-Length header must be set before calling end()";
 			}
-			try {
-				request.socket.writeInput(body, Std.parseInt(contentLength));
-			} catch (e) {
-				// swallow; the connection is torn down below
+			if (request.method != HEAD) {
+				try {
+					request.socket.writeInput(body, Std.parseInt(contentLength));
+				} catch (e) {
+					// swallow; the connection is torn down below
+				}
 			}
 			body.close();
 		}
