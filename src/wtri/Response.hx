@@ -49,17 +49,18 @@ class Response {
 			return;
 		if (code != null)
 			this.code = code;
+		final chunked = body != null && headers.get(Content_Length) == null;
+		if (chunked)
+			headers.set(Transfer_Encoding, "chunked");
 		if (!headersSent)
 			writeHead(this.code);
 		if (body != null) {
-			final contentLength = headers.get(Content_Length);
-			if (contentLength == null) {
-				// or we could use chunked encoding
-				throw "Content-Length header must be set before calling end()";
-			}
 			if (request.method != HEAD) {
 				try {
-					request.socket.writeInput(body, Std.parseInt(contentLength));
+					if (chunked)
+						writeChunked(body);
+					else
+						request.socket.writeInput(body, Std.parseInt(headers.get(Content_Length)));
 				} catch (e) {
 					// swallow; the connection is torn down below
 				}
@@ -67,10 +68,9 @@ class Response {
 			body.close();
 		}
 		finished = true;
-		switch headers.get(Connection) {
-			case null, 'close':
-				request.socket.close();
-		}
+		final connection = headers.get(Connection);
+		if (connection == null || connection.toLowerCase() != 'keep-alive')
+			request.socket.close();
 	}
 
 	public function toString()
@@ -78,4 +78,24 @@ class Response {
 
 	inline function writeLine(line:String)
 		request.socket.write(Bytes.ofString('$line\r\n'));
+
+	function writeChunked(body:haxe.io.Input) {
+		final chunkSize = 65536;
+		final buf = Bytes.alloc(chunkSize);
+		while (true) {
+			var read = 0;
+			try {
+				read = body.readBytes(buf, 0, chunkSize);
+			} catch (e:haxe.io.Eof) {
+				break;
+			}
+			if (read == 0)
+				break;
+			writeLine(StringTools.hex(read));
+			request.socket.write(read == buf.length ? buf : buf.sub(0, read));
+			writeLine('');
+		}
+		writeLine('0');
+		writeLine('');
+	}
 }
