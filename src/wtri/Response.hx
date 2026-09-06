@@ -60,8 +60,9 @@ class Response {
 			try {
 				request.socket.writeInput(body, Std.parseInt(contentLength));
 			} catch (e) {
-				body.close();
+				// swallow; the connection is torn down below
 			}
+			body.close();
 		}
 		finished = true;
 		switch headers.get(Connection) {

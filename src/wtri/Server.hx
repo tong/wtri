@@ -26,7 +26,7 @@ class Server {
 				var s = tcp.accept();
 				s.readStart(bytes -> {
 					try {
-						process(new wtri.net.Socket.UVSocket(s), new BytesInput(bytes));
+						process(new wtri.net.Socket.UVSocket(s, loop), new BytesInput(bytes));
 					} catch (e:Dynamic) {
 						s.close();
 					}

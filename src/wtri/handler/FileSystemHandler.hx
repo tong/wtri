@@ -61,6 +61,16 @@ class FileSystemHandler implements wtri.Handler {
 		}
 		final stat = FileSystem.stat(filePath);
 		final totalSize = stat.size;
+		if (totalSize < 0) {
+			// `FileStat.size` is a 32-bit Int on every sys target, so files
+			// >= 2GiB wrap around to a negative value here. Fail loudly
+			// instead of sending a garbage Content-Length no client can parse.
+			res.code = INTERNAL_SERVER_ERROR;
+			final bodyBytes = Bytes.ofString('File too large to serve (exceeds 2GiB)');
+			res.headers.set(Content_Length, Std.string(bodyBytes.length));
+			res.body = new haxe.io.BytesInput(bodyBytes);
+			return true;
+		}
 		var rangeString = req.headers.get(Range);
 		if (rangeString != null) {
 			var start:Int = -1, end:Int = -1;
@@ -82,11 +92,9 @@ class FileSystemHandler implements wtri.Handler {
 			res.headers.set(Content_Type, getFileContentType(filePath));
 			res.headers.set(Content_Range, 'bytes ${start}-${end}/${totalSize}');
 			res.headers.set(Content_Length, Std.string(contentLength));
-			final f = File.read(filePath);
+			final f = File.read(filePath, true);
 			f.seek(start, SeekBegin);
-			// res.body = f;
-			res.body = new haxe.io.BytesInput(f.read(contentLength));
-			f.close();
+			res.body = f;
 		} else {
 			res.headers.set(Content_Type, getFileContentType(filePath));
 			res.headers.set(Content_Length, Std.string(totalSize));
