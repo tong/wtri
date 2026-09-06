@@ -17,7 +17,12 @@ class Request {
 	public final method:Method;
 	public final headers:Headers = [];
 	public final params:Map<String, String> = [];
-	public final data:Bytes;
+
+	/**
+		Size of the request body in bytes, as declared by the `Content-Length` header.
+		`0` for methods that carry no body.
+	**/
+	public final contentLength:Int;
 
 	public var path:String;
 
@@ -33,19 +38,29 @@ class Request {
 		protocol = HTTP_REQUEST.matched(3);
 		parsePath();
 		parseHeaders();
-		data = switch method {
+		contentLength = switch method {
 			case POST | PUT | PATCH:
-				final contentLength = headers.get(Content_Length);
-				if (contentLength == null)
+				final contentLengthHeader = headers.get(Content_Length);
+				if (contentLengthHeader == null)
 					throw new Error(LENGTH_REQUIRED);
-				final len = Std.parseInt(contentLength);
+				final len = Std.parseInt(contentLengthHeader);
 				if (len == null || len < 0)
-					throw new Error(BAD_REQUEST, 'Invalid Content-Length: $contentLength');
-				len == 0 ? Bytes.alloc(0) : input.read(len);
+					throw new Error(BAD_REQUEST, 'Invalid Content-Length: $contentLengthHeader');
+				len;
 			case _:
-				Bytes.alloc(0);
+				0;
 		}
 	}
+
+	/**
+		Reads and buffers the entire request body into memory.
+
+		Only call this if you actually need the whole body as `Bytes`. To
+		avoid buffering large uploads, read from `input` directly (at most
+		`contentLength` bytes) and pipe it to its destination instead.
+	**/
+	public function readData():Bytes
+		return contentLength == 0 ? Bytes.alloc(0) : input.read(contentLength);
 
 	function parsePath() {
 		final pos = path.indexOf('?');
@@ -80,12 +95,6 @@ class Request {
 	**/
 	public function getEncoding(header:HeaderName = Accept_Encoding):Array<String>
 		return headers.exists(header) ? ~/ ?, ?/g.split(headers.get(header)) : [];
-
-	// public function dispose() {
-	//	headers = [];
-	//	data = null;
-	//	socket.close();
-	// }
 
 	public function toString()
 		return '$method $path';
