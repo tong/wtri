@@ -44,6 +44,7 @@ class TCPSocket implements Socket {
 #if hl
 class UVSocket implements Socket {
 	public final socket:hl.uv.Stream;
+
 	final loop:hl.uv.Loop;
 
 	public inline function new(socket:hl.uv.Stream, loop:hl.uv.Loop) {
@@ -58,20 +59,10 @@ class UVSocket implements Socket {
 		var remaining = len;
 		while (remaining > 0) {
 			final toRead = remaining > STREAM_CHUNK_SIZE ? STREAM_CHUNK_SIZE : remaining;
-			// libuv writes are asynchronous, so each chunk needs its own
-			// buffer - reusing one would let the next read clobber bytes
-			// a pending write hasn't sent yet.
 			final buf = Bytes.alloc(toRead);
 			final read = input.readBytes(buf, 0, toRead);
 			if (read == 0)
 				throw haxe.io.Error.Blocked;
-
-			// Wait for this chunk's async write to actually complete before
-			// reading (and queueing in memory) the next one. Without this,
-			// the whole input gets read and queued near-instantly regardless
-			// of how fast the client drains it, and closing the socket right
-			// after this loop (in Response.end()) would truncate any writes
-			// still in flight.
 			var done = false;
 			var ok = false;
 			socket.write(read == buf.length ? buf : buf.sub(0, read), success -> {
