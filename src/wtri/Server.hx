@@ -49,6 +49,7 @@ class Server {
 		while (listening) {
 			var client = server.accept();
 			client.setTimeout(connectionTimeout);
+			client.setFastSend(true);
 			final socket = new wtri.net.Socket.TCPSocket(client);
 			try {
 				while (process(socket, client.input)) {}
@@ -78,6 +79,7 @@ class Server {
 		while (listening) {
 			final client = server.accept();
 			client.setTimeout(timeout);
+			client.setFastSend(true);
 			workers[next++ % threads].add(client);
 		}
 		for (w in workers)
