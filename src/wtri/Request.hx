@@ -8,8 +8,9 @@ import wtri.http.Method;
 	Represents an incoming HTTP/1.1 request.
 **/
 class Request {
-	public static final HTTP_REQUEST = ~/^(GET|POST|PUT|HEAD|DELETE|PATCH|OPTIONS|TRACE|CONNECT) ([^ ]+) (HTTP\/1\.[01])$/i;
-	public static final HTTP_HEADER = ~/^([a-zA-Z0-9_-]+): *(.*)$/;
+	// Patterns, not `EReg`s: an `EReg` keeps match state, so a shared static one is not thread-safe.
+	static inline final HTTP_REQUEST_PATTERN = '^(GET|POST|PUT|HEAD|DELETE|PATCH|OPTIONS|TRACE|CONNECT) ([^ ]+) (HTTP\\/1\\.[01])$';
+	static inline final HTTP_HEADER_PATTERN = '^([a-zA-Z0-9_-]+): *(.*)$';
 
 	public final socket:Socket;
 	public final input:haxe.io.Input;
@@ -30,12 +31,13 @@ class Request {
 		this.socket = socket;
 		this.input = input;
 		final line = input.readLine();
-		if (!HTTP_REQUEST.match(line)) {
+		final re = new EReg(HTTP_REQUEST_PATTERN, 'i');
+		if (!re.match(line)) {
 			throw new Error(BAD_REQUEST, 'Invalid request line: $line');
 		}
-		method = HTTP_REQUEST.matched(1);
-		path = HTTP_REQUEST.matched(2);
-		protocol = HTTP_REQUEST.matched(3);
+		method = re.matched(1);
+		path = re.matched(2);
+		protocol = re.matched(3);
 		parsePath();
 		parseHeaders();
 		contentLength = switch method {
@@ -79,11 +81,12 @@ class Request {
 
 	function parseHeaders() {
 		var line:String;
+		final re = new EReg(HTTP_HEADER_PATTERN, '');
 		while ((line = input.readLine()).length > 0) {
-			if (!HTTP_HEADER.match(line))
+			if (!re.match(line))
 				throw new Error(BAD_REQUEST, 'Invalid header: $line');
-			final key = HTTP_HEADER.matched(1);
-			final val = HTTP_HEADER.matched(2);
+			final key = re.matched(1);
+			final val = re.matched(2);
 			headers.set(key, val);
 		}
 	}

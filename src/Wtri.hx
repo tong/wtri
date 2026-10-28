@@ -13,6 +13,7 @@ private function main() {
 	var autoIndex = true;
 	var scripting = false;
 	var maxConnections = 20;
+	var threads = 1;
 
 	var usage:String = null;
 	var argHandler = hxargs.Args.generate([
@@ -28,6 +29,13 @@ private function main() {
 			root = path;
 		},
 		@doc("Enable deflate content encoding")["--deflate"] => (level:Int) -> deflate = level,
+		#if target.threaded
+		@doc("Worker threads (handlers must be thread-safe)")["--threads"] => (count:Int) -> {
+			if (count < 1)
+				exit(1, 'Thread count must be >= 1');
+			threads = count;
+		},
+		#end
         @doc("Disable auto indexing")["--no-autoindex"] => () -> autoIndex = false,
 		#if hl
 		@doc("Use libuv (hl)")["--uv"] => (connections:Int) -> {
@@ -45,11 +53,11 @@ private function main() {
 	usage = 'Usage: wtri [options]\n\n' + argHandler.getDoc();
 	argHandler.parse(Sys.args());
 
-	start(host, port, root, autoIndex, deflate, scripting, quiet, uv, maxConnections);
+	start(host, port, root, autoIndex, deflate, scripting, quiet, uv, maxConnections, threads);
 }
 #end // !eval
 function start(host = "localhost", port = 8080, ?root:String, autoIndex = true, deflate = 0, scripting = false, quiet = false, uv = false,
-		maxConnections = 20) {
+		maxConnections = 20, threads = 1) {
 	if (root == null)
 		root = Sys.getCwd();
 	else {
@@ -60,6 +68,13 @@ function start(host = "localhost", port = 8080, ?root:String, autoIndex = true, 
 	wtri.Response.defaultHeaders.set("server", "wtri");
 
 	final handlers:Array<wtri.Handler> = [];
+
+	#if hscript
+	if (scripting && threads > 1) {
+		log('hscript handler is not thread-safe, using 1 thread');
+		threads = 1;
+	}
+	#end
 
 	#if hscript
 	if (scripting) {
@@ -123,7 +138,7 @@ function start(host = "localhost", port = 8080, ?root:String, autoIndex = true, 
 		}
 	});
 	log('Starting server http://$host:$port');
-	server.listen(port, host, uv, maxConnections);
+	server.listen(port, host, uv, maxConnections, 15.0, threads);
 	// return server;
 }
 
