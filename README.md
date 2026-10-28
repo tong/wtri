@@ -47,10 +47,21 @@ Usage: wtri [options]
 [--port] <number>    : Port to bind
 [--root] <path>      : File system root
 [--deflate] <level>  : Enable deflate content encoding
+[--threads] <count>  : Worker threads (handlers must be thread-safe)
+[--no-autoindex]     : Disable auto indexing
 [--uv] <connections> : Use libuv (hl)
 [--hscript]          : Enable hcript handler
 [--quiet]            : Disable logging to stdout
 [--help]             : Print this help
+```
+
+`--threads` (default `1`) is available on targets with threads support. Connections are
+spread over the workers, so handlers run concurrently and must be thread-safe
+(`--hscript` forces a single thread). When embedding, pass the count as the last
+argument of `listen`:
+
+```hx
+server.listen(8080, 'localhost', false, 20, 15.0, 4);
 ```
 
 Run directly as an initialization macro:

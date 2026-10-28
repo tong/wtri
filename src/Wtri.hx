@@ -16,38 +16,42 @@ private function main() {
 	var threads = 1;
 
 	var usage:String = null;
-	var argHandler = hxargs.Args.generate([
-        @doc("Address to bind")["--host"] => (name:String) -> host = name,
-        @doc("Port to bind")["--port"] => (number:Int) -> {
+	var argHandler = hxargs.Args.generate([@doc("Address to bind")
+		["--host"] => (name:String) -> host = name, @doc("Port to bind")
+		["--port"] => (number:Int) -> {
 			if (number < 1 || number > 65535)
 				exit(1, 'Port number out of range');
 			port = number;
-		},
-        @doc("File system root")["--root"] => (path:String) -> {
+		}, @doc("File system root")
+		["--root"] => (path:String) -> {
 			if (!FileSystem.exists(path) || !FileSystem.isDirectory(path))
 				exit(1, 'Root path not found');
 			root = path;
 		},
-		@doc("Enable deflate content encoding")["--deflate"] => (level:Int) -> deflate = level,
+		@doc("Enable deflate content encoding")
+		["--deflate"] => (level:Int) -> deflate = level,
 		#if target.threaded
-		@doc("Worker threads (handlers must be thread-safe)")["--threads"] => (count:Int) -> {
+		@doc("Worker threads (handlers must be thread-safe)")
+		["--threads"] => (count:Int) -> {
 			if (count < 1)
 				exit(1, 'Thread count must be >= 1');
 			threads = count;
 		},
 		#end
-        @doc("Disable auto indexing")["--no-autoindex"] => () -> autoIndex = false,
+		@doc("Disable auto indexing")
+		["--no-autoindex"] => () -> autoIndex = false,
 		#if hl
-		@doc("Use libuv (hl)")["--uv"] => (connections:Int) -> {
+		@doc("Use libuv (hl)") ["--uv"] => (connections:Int) -> {
 			uv = true;
 			maxConnections = connections;
 		},
 		#end
 		#if hscript
-		@doc("Enable hcript handler")["--hscript"] => () -> scripting = true,
+		@doc("Enable hcript handler") ["--hscript"] => () -> scripting = true,
 		#end
-		@doc("Disable logging to stdout")["--quiet"] => () -> quiet = true,
-        @doc("Print this help")["--help"] => () -> exit(usage),
+		@doc("Disable logging to stdout")
+		["--quiet"] => () -> quiet = true, @doc("Print this help")
+		["--help"] => () -> exit(usage),
 		_ => arg -> exit(1, 'Unknown argument [$arg]\n')
 	]);
 	usage = 'Usage: wtri [options]\n\n' + argHandler.getDoc();
@@ -79,7 +83,7 @@ function start(host = "localhost", port = 8080, ?root:String, autoIndex = true, 
 	#if hscript
 	if (scripting) {
 		final hs = new wtri.handler.HScriptHandler(root);
-		//hs.interp.variables.set("Bytes", Bytes);
+		// hs.interp.variables.set("Bytes", Bytes);
 		handlers.push(hs);
 	}
 	#end
