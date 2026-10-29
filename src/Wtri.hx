@@ -141,6 +141,14 @@ function start(host = "localhost", port = 8080, ?root:String, autoIndex = true, 
 			log(info);
 		}
 	});
+	// libuv reports a busy port late and as a bare `Eof`, so check up front
+	final probe = new sys.net.Socket();
+	try
+		probe.bind(new sys.net.Host(host), port)
+	catch (e:Dynamic) {
+		exit(1, 'Cannot listen on $host:$port: port already in use');
+	}
+	probe.close();
 	log('Starting server http://$host:$port');
 	server.listen(port, host, uv, maxConnections, 15.0, threads);
 	// return server;
